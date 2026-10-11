@@ -1,0 +1,21 @@
+configuration:
+  t3_port:
+    name: "T3 Code port"
+    description: "TCP port the T3 Code web interface listens on."
+  t3_host:
+    name: "Bind address"
+    description: "Address the T3 Code server binds to (0.0.0.0 exposes it on the LAN)."
+  workspace:
+    name: "Workspace"
+    description: "Directory used as the default project / working directory."
+  git_name:
+    name: "Git user name"
+    description: "Optional global git user.name configured for the dev user."
+  git_email:
+    name: "Git user email"
+    description: "Optional global git user.email configured for the dev user."
+  t3_version:
+    name: "T3 Code version"
+    description: "Informational only: rebuild the add-on to refresh the bundled version."
+network:
+  "4096/TCP": "T3 Code web interface"

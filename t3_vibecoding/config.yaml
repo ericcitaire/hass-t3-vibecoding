@@ -1,0 +1,40 @@
+name: "T3 Code + OpenCode"
+version: "0.1.0"
+slug: "t3_vibecoding"
+description: >-
+  Environnement de vibe coding headless : serveur T3 Code + OpenCode, avec git,
+  node, ripgrep et outils usuels, exécutés sous un utilisateur non-root.
+url: "https://github.com/pingdotgg/t3code"
+arch:
+  - amd64
+  - aarch64
+init: false
+startup: application
+boot: auto
+panel_icon: mdi:code-braces
+panel_title: "T3 Code"
+map:
+  - type: share
+    read_only: false
+  - type: config
+    read_only: false
+ports:
+  "4096/tcp": 4096
+ports_description:
+  "4096/tcp": "Interface web T3 Code"
+webui: "http://[HOST]:[PORT:4096]/"
+watchdog: "tcp://[HOST]:[PORT:4096]"
+options:
+  t3_port: 4096
+  t3_host: "0.0.0.0"
+  workspace: "/share/vibecoding"
+  git_name: ""
+  git_email: ""
+  t3_version: "latest"
+schema:
+  t3_port: port
+  t3_host: str
+  workspace: str
+  git_name: "str?"
+  git_email: "str?"
+  t3_version: str
