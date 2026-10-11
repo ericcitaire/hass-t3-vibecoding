@@ -17,5 +17,17 @@ configuration:
   t3_version:
     name: "T3 Code version"
     description: "Informational only: rebuild the add-on to refresh the bundled version."
+  github_token:
+    name: "GitHub token"
+    description: "Optional GitHub token used for 'gh auth login' (and exported as GH_TOKEN)."
+  env_vars:
+    name: "Environment variables"
+    description: "Extra environment variables passed to T3 Code (e.g. provider API keys like ANTHROPIC_API_KEY)."
+  opencode_config_json:
+    name: "OpenCode config (JSON)"
+    description: "Optional JSON written to ~/.config/opencode/opencode.json (providers, models, options)."
+  opencode_auth_json:
+    name: "OpenCode auth (JSON)"
+    description: "Optional JSON written to ~/.local/share/opencode/auth.json (provider credentials)."
 network:
   "4096/TCP": "T3 Code web interface"
