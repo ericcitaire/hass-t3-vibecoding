@@ -26,6 +26,7 @@ Assistant OS. Il exécute un serveur **T3 Code** (`t3 serve`, mode web) avec
 | `env_vars` | `[]` | Variables d'environnement passées à T3 Code. |
 | `opencode_config_json` | *(vide)* | JSON → `~/.config/opencode/opencode.json`. |
 | `opencode_auth_json` | *(vide)* | JSON → `~/.local/share/opencode/auth.json`. |
+| `t3_settings_json` | *(vide)* | JSON fusionné dans `<T3CODE_HOME>/userdata/settings.json`. |
 
 ## Configuration des providers / clés d'API
 
@@ -72,10 +73,35 @@ Pour des identifiants au format `opencode auth` (api/oauth), coller dans
 > Les JSON sont validés par `jq` au démarrage, puis écrits avant le lancement de
 > T3 Code. Un JSON invalide est ignoré avec un avertissement dans le journal.
 
-> Pense à **activer le driver OpenCode** dans l'UI T3 Code une fois (l'état est
-> persisté dans `/data`).
+### 4. Réglages T3 Code (`settings.json`)
 
-### 4. GitHub CLI (`gh`)
+Par défaut **aucun driver n'est activé** dans T3 Code, et le modèle de génération
+par défaut pointe sur `codex` (indisponible ici). Pour que l'add-on soit utilisable
+dès le départ, renseigner `t3_settings_json`. Ce JSON est **fusionné
+récursivement** dans `<T3CODE_HOME>/userdata/settings.json` : tes clés gagnent,
+les autres (réglages faits dans l'UI) sont préservées.
+
+Exemple : activer le driver OpenCode et prendre DeepSeek par défaut.
+
+```json
+{
+  "providers": {
+    "opencode": { "enabled": true }
+  },
+  "textGenerationModelSelection": {
+    "instanceId": "opencode",
+    "model": "deepseek/deepseek-chat"
+  }
+}
+```
+
+Drivers disponibles sous `providers` : `opencode`, `codex`, `claudeAgent`,
+`cursor`, `grok`, `antigravity` — chacun avec un champ `enabled` (défaut `false`).
+
+> Le fichier vit dans `/data/t3code/userdata/settings.json` et survit aux mises à
+> jour de l'add-on.
+
+### 5. GitHub CLI (`gh`)
 
 Renseigner `github_token` (classic PAT, scope `repo`) : l'add-on exécute
 `gh auth login --with-token` + `gh auth setup-git`, et exporte `GH_TOKEN`. La

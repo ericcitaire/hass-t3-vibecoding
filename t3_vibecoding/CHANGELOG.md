@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+- Option `t3_settings_json` : JSON fusionné (récursivement) dans
+  `<T3CODE_HOME>/userdata/settings.json` pour activer les drivers et définir le
+  comportement par défaut (modèle de génération). Permet d'activer le harness
+  OpenCode sans passer par l'UI.
+- Validation JSON via `jq` ; fusion sans écraser les réglages issus de l'UI.
+- Traduction de la nouvelle option (`en`/`fr`).
+
 ## 0.2.0
 
 - Option `github_token` : `gh auth login --with-token` + `gh auth setup-git`,

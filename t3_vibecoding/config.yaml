@@ -1,5 +1,5 @@
 name: "T3 Code + OpenCode"
-version: "0.2.0"
+version: "0.3.0"
 slug: "t3_vibecoding"
 description: >-
   Environnement de vibe coding headless : serveur T3 Code + OpenCode, avec git,
@@ -35,6 +35,7 @@ options:
   env_vars: []
   opencode_config_json: ""
   opencode_auth_json: ""
+  t3_settings_json: ""
 schema:
   t3_port: port
   t3_host: str
@@ -48,3 +49,4 @@ schema:
       value: password
   opencode_config_json: "str?"
   opencode_auth_json: "str?"
+  t3_settings_json: "str?"

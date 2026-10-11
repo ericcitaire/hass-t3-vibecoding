@@ -29,5 +29,8 @@ configuration:
   opencode_auth_json:
     name: "OpenCode auth (JSON)"
     description: "Optional JSON written to ~/.local/share/opencode/auth.json (provider credentials)."
+  t3_settings_json:
+    name: "T3 Code settings (JSON)"
+    description: "Optional JSON merged into <T3CODE_HOME>/userdata/settings.json (enable drivers, default model)."
 network:
   "4096/TCP": "T3 Code web interface"

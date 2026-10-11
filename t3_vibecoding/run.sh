@@ -15,6 +15,7 @@ GIT_EMAIL="$(bashio::config 'git_email')"
 GITHUB_TOKEN="$(bashio::config 'github_token')"
 OPENCODE_CONFIG_JSON="$(bashio::config 'opencode_config_json')"
 OPENCODE_AUTH_JSON="$(bashio::config 'opencode_auth_json')"
+T3_SETTINGS_JSON="$(bashio::config 't3_settings_json')"
 
 bashio::log.info "Préparation des répertoires persistants"
 mkdir -p "${HOME_DIR}" "${T3_HOME}" "${WORKSPACE}"
@@ -58,6 +59,26 @@ if bashio::var.has_value "${OPENCODE_AUTH_JSON}"; then
     chown -R "${DEV_UID}:${DEV_GID}" "${HOME_DIR}/.local/share"
   else
     bashio::log.warning "opencode_auth_json ignoré : JSON invalide"
+  fi
+fi
+
+if bashio::var.has_value "${T3_SETTINGS_JSON}"; then
+  if printf '%s' "${T3_SETTINGS_JSON}" | jq -e . >/dev/null 2>&1; then
+    bashio::log.info "Fusion des réglages T3 Code (settings.json)"
+    SETTINGS_PATH="${T3_HOME}/userdata/settings.json"
+    mkdir -p "${T3_HOME}/userdata"
+    printf '%s' "${T3_SETTINGS_JSON}" | jq . > "${T3_HOME}/userdata/settings.incoming.json"
+    if [ -f "${SETTINGS_PATH}" ]; then
+      jq -s '.[0] * .[1]' "${SETTINGS_PATH}" "${T3_HOME}/userdata/settings.incoming.json" > "${SETTINGS_PATH}.tmp"
+    else
+      cp "${T3_HOME}/userdata/settings.incoming.json" "${SETTINGS_PATH}.tmp"
+    fi
+    mv "${SETTINGS_PATH}.tmp" "${SETTINGS_PATH}"
+    rm -f "${T3_HOME}/userdata/settings.incoming.json"
+    chown "${DEV_UID}:${DEV_GID}" "${SETTINGS_PATH}"
+    chmod 600 "${SETTINGS_PATH}"
+  else
+    bashio::log.warning "t3_settings_json ignoré : JSON invalide"
   fi
 fi
 
