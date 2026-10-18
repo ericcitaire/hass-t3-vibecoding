@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.1
+
+- Correctif du health check OpenCode de T3 Code : `opencode --version` pouvait
+  dépasser le délai de 4 secondes (`OpenCode CLI version probe timed out after
+  4 seconds`) à cause du temps de démarrage du binaire compilé.
+- Un wrapper léger répond immédiatement à `opencode --version` ; toutes les
+  autres commandes sont transmises au binaire réel `opencode.real`.
+
 ## 0.5.0
 
 - Ajout de **code-server 4.141.0** (VS Code dans le navigateur), installé depuis

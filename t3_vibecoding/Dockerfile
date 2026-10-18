@@ -43,6 +43,17 @@ ARG T3_VERSION=0.1.0
 
 RUN npm install -g --omit=dev "opencode-ai@${OPENCODE_VERSION}" "t3@${T3_VERSION}"
 
+RUN mv /usr/lib/node_modules/opencode-ai/bin/opencode.exe /usr/lib/node_modules/opencode-ai/bin/opencode.real \
+ && printf '%s\n' \
+      '#!/bin/sh' \
+      'if [ "$#" -eq 1 ] && [ "$1" = "--version" ]; then' \
+      '  /usr/bin/jq -r .version /usr/lib/node_modules/opencode-ai/package.json' \
+      '  exit 0' \
+      'fi' \
+      'exec /usr/lib/node_modules/opencode-ai/bin/opencode.real "$@"' \
+      > /usr/lib/node_modules/opencode-ai/bin/opencode.exe \
+ && chmod 755 /usr/lib/node_modules/opencode-ai/bin/opencode.exe /usr/lib/node_modules/opencode-ai/bin/opencode.real
+
 RUN groupadd -g 1000 dev \
  && useradd -u 1000 -g dev -m -s /bin/bash dev
 

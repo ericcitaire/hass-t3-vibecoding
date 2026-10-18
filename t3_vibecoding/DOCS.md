@@ -177,6 +177,12 @@ config persiste dans `/data/home/.config/gh`.
 - **Mot de passe code-server refusé** : le mot de passe est réécrit depuis
   l'option `code_server_password` à chaque démarrage ; le modifier dans
   l'éditeur ne suffit pas.
+- **`OpenCode CLI version probe timed out after 4 seconds`** : le binaire
+  OpenCode peut mettre plus de 4 secondes à démarrer sur certaines machines,
+  alors que T3 Code impose ce délai à `opencode --version`. L'add-on installe un
+  wrapper qui répond immédiatement à `--version` ; les autres commandes sont
+  transmises au binaire réel. Si le message persiste, vérifier qu'aucun
+  `binaryPath` personnalisé ne pointe directement vers `opencode.real`.
 - **Keyring headless** : `@napi-rs/keyring` peut ne pas trouver de Secret Service ;
   vérifier le fallback fichier dans les logs.
 - **Sécurité réseau** : `0.0.0.0:4096` expose le port au LAN ; s'appuyer sur
