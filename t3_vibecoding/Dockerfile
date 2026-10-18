@@ -4,6 +4,9 @@ FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8
 
+ARG BUILD_ARCH
+ARG CODE_SERVER_VERSION=4.141.0
+
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates curl gnupg git jq ripgrep fd-find less vim nano \
@@ -21,6 +24,20 @@ RUN apt-get update \
  && ln -sf "$(command -v fdfind)" /usr/local/bin/fd \
  && rm -rf /var/lib/apt/lists/*
 
+RUN set -eux; \
+    case "${BUILD_ARCH:-$(dpkg --print-architecture)}" in \
+      amd64) cs_arch="amd64" ;; \
+      arm64|aarch64) cs_arch="arm64" ;; \
+      *) echo "Architecture non supportée pour code-server : ${BUILD_ARCH:-$(dpkg --print-architecture)}" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSL "https://github.com/coder/code-server/releases/download/v${CODE_SERVER_VERSION}/code-server-${CODE_SERVER_VERSION}-linux-${cs_arch}.tar.gz" \
+      -o /tmp/code-server.tar.gz; \
+    mkdir -p /usr/local/lib; \
+    tar -xzf /tmp/code-server.tar.gz -C /usr/local/lib; \
+    mv "/usr/local/lib/code-server-${CODE_SERVER_VERSION}-linux-${cs_arch}" /usr/local/lib/code-server; \
+    ln -sf /usr/local/lib/code-server/bin/code-server /usr/local/bin/code-server; \
+    rm -f /tmp/code-server.tar.gz
+
 ARG OPENCODE_VERSION=1.19.3
 ARG T3_VERSION=0.1.0
 
@@ -33,7 +50,6 @@ COPY run.sh /
 RUN chmod a+x /run.sh
 
 ARG BUILD_VERSION
-ARG BUILD_ARCH
 LABEL \
   io.hass.version="${BUILD_VERSION}" \
   io.hass.type="app" \

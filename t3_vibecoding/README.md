@@ -6,6 +6,8 @@ tout le tooling (`git`, `node`, `npm`, `ripgrep`, `fd`, `gh`, build tools,
 `t3 serve` sous un utilisateur **non-root** (`dev`).
 
 - Interface web T3 Code exposée sur `http://<hôte>:4096/` (appairage géré par T3).
+- Éditeur web optionnel **code-server** (VS Code) sur `http://<hôte>:8081/`,
+  activable et protégé par mot de passe depuis les options de l'add-on.
 - État persistant dans `/data` (survit aux mises à jour de l'add-on).
 - Workspace par défaut : `/share/vibecoding` (dossier HA `share`).
 - Redémarrage automatique au boot de la box (`boot: auto`).

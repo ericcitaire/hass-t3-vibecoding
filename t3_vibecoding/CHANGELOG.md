@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0
+
+- Ajout de **code-server 4.141.0** (VS Code dans le navigateur), installé depuis
+  la release GitHub officielle et épinglé via `CODE_SERVER_VERSION`.
+- Nouvelles options `code_server` (désactivé par défaut) et
+  `code_server_password` pour activer et protéger l'éditeur web depuis l'UI de
+  configuration Home Assistant.
+- Port `8081` dédié (T3 Code reste sur `4096`) ; code-server tourne sous
+  l'utilisateur `dev`, en parallèle de `t3 serve`, et redémarre automatiquement
+  en cas d'arrêt.
+- Configuration et extensions code-server persistées dans `/data/home`.
+- Traductions `en`/`fr` et documentation mises à jour.
+
 ## 0.4.0
 
 - Mise à jour des applicatifs embarqués : **OpenCode 1.19.3** et **T3 Code
