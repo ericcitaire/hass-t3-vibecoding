@@ -30,6 +30,10 @@ if bashio::var.has_value "${GIT_EMAIL}"; then
 fi
 env HOME="${HOME_DIR}" s6-setuidgid "${DEV_USER}" git config --global --add safe.directory "${WORKSPACE}"
 
+OPENCODE_VERSION="$(env HOME="${HOME_DIR}" s6-setuidgid "${DEV_USER}" opencode --version 2>/dev/null || echo 'inconnu')"
+T3_VERSION="$(env HOME="${HOME_DIR}" s6-setuidgid "${DEV_USER}" t3 --version 2>/dev/null || echo 'inconnu')"
+bashio::log.info "Versions embarquées : opencode ${OPENCODE_VERSION}, t3 ${T3_VERSION}"
+
 if bashio::var.has_value "${GITHUB_TOKEN}"; then
   bashio::log.info "Authentification de la CLI gh"
   if printf '%s' "${GITHUB_TOKEN}" | env HOME="${HOME_DIR}" s6-setuidgid "${DEV_USER}" gh auth login --with-token; then

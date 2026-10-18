@@ -10,7 +10,8 @@ Assistant OS. Il exécute un serveur **T3 Code** (`t3 serve`, mode web) avec
 - `node` 22 + `npm`
 - `ripgrep`, `fd`, `jq`, `less`, `vim`, `nano`
 - `build-essential`, `python3`, `openssh-client`
-- `opencode-ai` et `t3` (installés globalement via npm)
+- `opencode-ai` 1.19.3 et `t3` 0.1.0 (versions stables épinglées, installées
+  globalement via npm)
 
 ## Options
 
@@ -141,5 +142,18 @@ config persiste dans `/data/home/.config/gh`.
 
 ## Mises à jour
 
-Pour rafraîchir `t3`/`opencode`, incrémenter `version` dans `config.yaml` et
-reconstruire l'add-on (reproductible), plutôt que `t3 update` dans le conteneur.
+Les versions d'`opencode-ai` et de `t3` sont épinglées dans le `Dockerfile` via
+les arguments de build `OPENCODE_VERSION` et `T3_VERSION` (actuellement
+`1.19.3` et `0.1.0`). Pour rafraîchir les applicatifs :
+
+1. rechercher la dernière version stable sur npm (`npm view opencode-ai version`,
+   `npm view t3 version`) ;
+2. mettre à jour les valeurs par défaut des `ARG` dans le `Dockerfile` ;
+3. incrémenter `version` dans `config.yaml` et ajouter une entrée au
+   `CHANGELOG.md` ;
+4. reconstruire l'add-on.
+
+Changer la valeur d'un `ARG` invalide le cache Docker de la couche npm : la
+nouvelle version est donc réellement réinstallée (contrairement à un rebuild à
+`Dockerfile` inchangé). Éviter `t3 update` dans le conteneur : la mise à jour
+serait perdue à la reconstruction et moins reproductible.

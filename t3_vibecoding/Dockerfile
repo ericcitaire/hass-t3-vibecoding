@@ -21,7 +21,10 @@ RUN apt-get update \
  && ln -sf "$(command -v fdfind)" /usr/local/bin/fd \
  && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g --omit=dev opencode-ai t3
+ARG OPENCODE_VERSION=1.19.3
+ARG T3_VERSION=0.1.0
+
+RUN npm install -g --omit=dev "opencode-ai@${OPENCODE_VERSION}" "t3@${T3_VERSION}"
 
 RUN groupadd -g 1000 dev \
  && useradd -u 1000 -g dev -m -s /bin/bash dev

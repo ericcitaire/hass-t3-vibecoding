@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0
+
+- Mise à jour des applicatifs embarqués : **OpenCode 1.19.3** et **T3 Code
+  0.1.0** (dernières versions stables publiées sur npm).
+- Versions épinglées via les arguments de build `OPENCODE_VERSION` et
+  `T3_VERSION` : le cache Docker de la couche npm est invalidé quand une version
+  change, ce qui garantit que l'image reconstruite contient bien la nouvelle
+  version.
+- Journalisation des versions `opencode` et `t3` au démarrage de l'add-on.
+
 ## 0.3.0
 
 - Option `t3_settings_json` : JSON fusionné (récursivement) dans
