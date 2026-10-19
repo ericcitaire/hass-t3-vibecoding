@@ -28,4 +28,5 @@ La cohérence des options entre `config.yaml`, les traductions, `DOCS.md` et
 python3 -m pip install --user pyyaml
 python3 scripts/verify-options.py
 bash tests/test-startup.sh
+bash tests/test-code-server.sh
 ```

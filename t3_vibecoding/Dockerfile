@@ -59,7 +59,8 @@ RUN groupadd -g 1000 dev \
 
 COPY run.sh /
 COPY lib/ /usr/local/lib/t3-vibecoding/
-RUN chmod a+x /run.sh
+COPY services/ /etc/services.d/
+RUN chmod a+x /run.sh /etc/services.d/code-server/run
 
 ARG BUILD_VERSION
 LABEL \

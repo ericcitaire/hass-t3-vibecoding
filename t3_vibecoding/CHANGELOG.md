@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.0
+
+- **code-server** devient un service **s6** supervisé (`services/code-server/run`)
+  au lieu d'une boucle `while true` dans `run.sh`. s6 gère le démarrage, le
+  redémarrage et l'arrêt propre en parallèle de T3 Code.
+- La préparation de code-server (mot de passe, `config.yaml`, permissions) vit
+  dans `lib/code-server.sh` et n'est plus exécutée par le script d'entrée.
+- code-server reçoit désormais le même environnement que T3 Code (`GH_TOKEN`,
+  variables `env_vars`).
+- Ajout de `tests/test-code-server.sh`, exécuté par la CI.
+
 ## 0.6.1
 
 - Extraction d'un module de démarrage (`lib/startup.sh`) : chargement des

@@ -1,5 +1,5 @@
 name: "T3 Code + OpenCode"
-version: "0.6.1"
+version: "0.7.0"
 slug: "t3_vibecoding"
 description: >-
   Environnement de vibe coding headless : serveur T3 Code + OpenCode, avec git,

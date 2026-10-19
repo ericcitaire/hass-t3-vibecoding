@@ -43,6 +43,11 @@ startup_run_as_dev() {
   env "${STARTUP_DEV_ENV[@]}" "${STARTUP_EXTRA_ENV[@]}" s6-setuidgid "${DEV_USER}" "$@"
 }
 
+startup_exec_as_dev() {
+  _startup_build_dev_env
+  exec env "${STARTUP_DEV_ENV[@]}" "${STARTUP_EXTRA_ENV[@]}" s6-setuidgid "${DEV_USER}" "$@"
+}
+
 startup_prepare_home() {
   local workspace="${STARTUP_OPTIONS[workspace]}"
 
@@ -191,9 +196,7 @@ startup_build_extra_env() {
 startup_exec_t3() {
   bashio::log.info "Démarrage de T3 Code sur ${T3_HOST}:${T3_PORT} (user ${DEV_USER}, workspace=${STARTUP_OPTIONS[workspace]})"
 
-  _startup_build_dev_env
-  exec env "${STARTUP_DEV_ENV[@]}" "${STARTUP_EXTRA_ENV[@]}" \
-    s6-setuidgid "${DEV_USER}" \
+  startup_exec_as_dev \
     t3 serve \
       --mode web \
       --host "${T3_HOST}" \

@@ -56,6 +56,8 @@ Points importants :
   l'option de l'add-on.
 - code-server tourne sous l'utilisateur `dev`, avec le même `HOME` et le même
   workspace que T3 Code (`/share/vibecoding` par défaut).
+- code-server est lancé comme **service s6** supervisé : il redémarre
+  automatiquement s'il s'arrête et est arrêté proprement avec l'add-on.
 - Le mot de passe et le port donnent un **accès shell complet** : ne pas exposer
   `8081` sur Internet. Rester sur le LAN ou passer par un VPN (Tailscale, etc.).
 - Les réglages et extensions sont persistés dans
