@@ -22,3 +22,5 @@ jobs:
         run: bash tests/test-startup.sh
       - name: Test code-server module
         run: bash tests/test-code-server.sh
+      - name: Test credentials module
+        run: bash tests/test-credentials.sh

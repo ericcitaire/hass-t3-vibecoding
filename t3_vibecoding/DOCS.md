@@ -88,6 +88,9 @@ env_vars:
 
 Les valeurs sont de type `password` (masquées dans l'UI).
 
+Les variables `env_vars` et `GH_TOKEN` sont transmises à **T3 Code et
+code-server**, qui partagent le même environnement d'exécution.
+
 ### 2. Config OpenCode (JSON)
 
 Coller dans `opencode_config_json` le contenu de `~/.config/opencode/opencode.json`

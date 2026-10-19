@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.8.0
+
+- Centralisation de l'intake des identifiants et configurations dans
+  `lib/credentials.sh` : validation JSON, écriture atomique, permissions,
+  `gh auth`, fusion des réglages T3 et construction de l'environnement.
+- T3 Code et code-server reçoivent désormais exactement le même environnement
+  (`GH_TOKEN`, variables `env_vars`).
+- Un échec de `gh auth setup-git` est journalisé au lieu d'être silencieux.
+- Journalisation d'un résumé des identifiants/configurations appliqués, sans
+  aucune valeur secrète.
+- Ajout de `tests/test-credentials.sh` et factorisation des tests dans
+  `tests/helpers.sh`.
+
 ## 0.7.0
 
 - **code-server** devient un service **s6** supervisé (`services/code-server/run`)

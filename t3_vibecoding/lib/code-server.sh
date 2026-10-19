@@ -30,7 +30,7 @@ code_server_run() {
   local password
 
   startup_load_options
-  startup_build_extra_env
+  credentials_env
 
   if ! bashio::config.true 'code_server'; then
     bashio::log.info "code-server désactivé"

@@ -29,4 +29,5 @@ python3 -m pip install --user pyyaml
 python3 scripts/verify-options.py
 bash tests/test-startup.sh
 bash tests/test-code-server.sh
+bash tests/test-credentials.sh
 ```

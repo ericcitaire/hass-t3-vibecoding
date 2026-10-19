@@ -3,6 +3,8 @@
 # shellcheck source=/dev/null
 source /usr/local/lib/t3-vibecoding/startup.sh
 # shellcheck source=/dev/null
+source /usr/local/lib/t3-vibecoding/credentials.sh
+# shellcheck source=/dev/null
 source /usr/local/lib/t3-vibecoding/code-server.sh
 
 code_server_run
