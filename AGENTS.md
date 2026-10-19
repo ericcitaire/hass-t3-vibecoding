@@ -1,3 +1,7 @@
+## Language
+
+Réponds-moi en français. Le code, les commits et la documentation du dépôt restent en anglais.
+
 ## Agent skills
 
 ### Issue tracker
