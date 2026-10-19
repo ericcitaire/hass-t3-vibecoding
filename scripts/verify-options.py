@@ -44,7 +44,11 @@ def main() -> int:
     en_network = load_yaml(EN).get("network") or {}
     fr_network = load_yaml(FR).get("network") or {}
     docs = DOCS.read_text(encoding="utf-8")
-    run = RUN.read_text(encoding="utf-8")
+    runtime_files = [RUN, *sorted((ADDON / "lib").glob("*.sh"))]
+    services = ADDON / "services"
+    if services.exists():
+        runtime_files.extend(path for path in sorted(services.rglob("*")) if path.is_file())
+    run = "\n".join(path.read_text(encoding="utf-8") for path in runtime_files)
 
     options = config.get("options") or {}
     schema = config.get("schema") or {}

@@ -58,6 +58,7 @@ RUN groupadd -g 1000 dev \
  && useradd -u 1000 -g dev -m -s /bin/bash dev
 
 COPY run.sh /
+COPY lib/ /usr/local/lib/t3-vibecoding/
 RUN chmod a+x /run.sh
 
 ARG BUILD_VERSION

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.1
+
+- Extraction d'un module de démarrage (`lib/startup.sh`) : chargement des
+  options, préparation du `HOME`, écriture atomique des fichiers JSON,
+  construction de l'environnement `dev` et lancement de T3 Code. `run.sh` se
+  limite désormais à l'orchestration.
+- Ajout de `tests/test-startup.sh` (9 tests sans conteneur), exécuté par la CI.
+
 ## 0.6.0
 
 - Retrait des options trompeuses : `t3_port`, `t3_host` et `t3_version` n'étaient
