@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.0
+
+- Retrait des options trompeuses : `t3_port`, `t3_host` et `t3_version` n'étaient
+  pas (ou seulement partiellement) honorées. Le port conteneur T3 Code est fixé à
+  `4096`, l'écoute à `0.0.0.0`, et seul le port **hôte** se configure dans les
+  réglages réseau de l'add-on.
+- Retrait des surfaces mortes : montage `config` (déprécié et inutilisé),
+  `panel_icon`/`panel_title` (aucun ingress) et `ports_description` (doublon des
+  traductions).
+- Ajout de `scripts/verify-options.py` et d'une GitHub Action qui vérifient la
+  cohérence options / schéma / traductions / `DOCS.md` / ports / `run.sh`.
+- Suppression de `PLAN.md`, plan d'implémentation obsolète et contradictoire.
+
 ## 0.5.1
 
 - Correctif du health check OpenCode de T3 Code : `opencode --version` pouvait

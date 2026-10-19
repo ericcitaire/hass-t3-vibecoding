@@ -1,10 +1,4 @@
 configuration:
-  t3_port:
-    name: "Port T3 Code"
-    description: "Port TCP sur lequel l'interface web T3 Code écoute."
-  t3_host:
-    name: "Adresse d'écoute"
-    description: "Adresse sur laquelle le serveur T3 Code se lie (0.0.0.0 l'expose sur le LAN)."
   workspace:
     name: "Espace de travail"
     description: "Répertoire utilisé comme projet / dossier de travail par défaut."
@@ -14,9 +8,6 @@ configuration:
   git_email:
     name: "Email git"
     description: "user.email global git optionnel configuré pour l'utilisateur dev."
-  t3_version:
-    name: "Version de T3 Code"
-    description: "Informative uniquement : reconstruire l'add-on pour rafraîchir la version embarquée."
   github_token:
     name: "Token GitHub"
     description: "Token GitHub optionnel utilisé pour 'gh auth login' (et exporté en GH_TOKEN)."

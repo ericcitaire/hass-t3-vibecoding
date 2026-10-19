@@ -18,3 +18,13 @@ Dépôt d'add-ons locaux pour Home Assistant OS.
 | Add-on | Description |
 |---|---|
 | [T3 Code + OpenCode](t3_vibecoding) | Vibe coding headless : serveur T3 Code + OpenCode, tooling dev, user non-root. |
+
+## Vérifications
+
+La cohérence des options entre `config.yaml`, les traductions, `DOCS.md` et
+`run.sh`, ainsi que celle des ports conteneur, est vérifiée par la CI :
+
+```bash
+python3 -m pip install --user pyyaml
+python3 scripts/verify-options.py
+```

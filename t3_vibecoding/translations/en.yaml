@@ -1,10 +1,4 @@
 configuration:
-  t3_port:
-    name: "T3 Code port"
-    description: "TCP port the T3 Code web interface listens on."
-  t3_host:
-    name: "Bind address"
-    description: "Address the T3 Code server binds to (0.0.0.0 exposes it on the LAN)."
   workspace:
     name: "Workspace"
     description: "Directory used as the default project / working directory."
@@ -14,9 +8,6 @@ configuration:
   git_email:
     name: "Git user email"
     description: "Optional global git user.email configured for the dev user."
-  t3_version:
-    name: "T3 Code version"
-    description: "Informational only: rebuild the add-on to refresh the bundled version."
   github_token:
     name: "GitHub token"
     description: "Optional GitHub token used for 'gh auth login' (and exported as GH_TOKEN)."

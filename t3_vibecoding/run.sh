@@ -6,10 +6,10 @@ DEV_GID=1000
 DEV_USER="dev"
 HOME_DIR="/data/home"
 T3_HOME="/data/t3code"
+T3_PORT=4096
+T3_HOST="0.0.0.0"
 CODE_SERVER_PORT=8081
 
-T3_PORT="$(bashio::config 't3_port')"
-T3_HOST="$(bashio::config 't3_host')"
 WORKSPACE="$(bashio::config 'workspace')"
 GIT_NAME="$(bashio::config 'git_name')"
 GIT_EMAIL="$(bashio::config 'git_email')"

@@ -18,12 +18,9 @@ Assistant OS. Il exécute un serveur **T3 Code** (`t3 serve`, mode web) avec
 
 | Option | Défaut | Description |
 |---|---|---|
-| `t3_port` | `4096` | Port TCP de l'interface web T3 Code. |
-| `t3_host` | `0.0.0.0` | Adresse d'écoute (0.0.0.0 = exposé sur le LAN). |
 | `workspace` | `/share/vibecoding` | Répertoire de travail / projet par défaut. |
 | `git_name` | *(vide)* | `user.name` global git pour `dev`. |
 | `git_email` | *(vide)* | `user.email` global git pour `dev`. |
-| `t3_version` | `latest` | Informative : reconstruire l'add-on pour rafraîchir. |
 | `github_token` | *(vide)* | Token GitHub pour `gh auth login` (+ export `GH_TOKEN`). |
 | `env_vars` | `[]` | Variables d'environnement passées à T3 Code. |
 | `opencode_config_json` | *(vide)* | JSON → `~/.config/opencode/opencode.json`. |
@@ -31,6 +28,11 @@ Assistant OS. Il exécute un serveur **T3 Code** (`t3 serve`, mode web) avec
 | `t3_settings_json` | *(vide)* | JSON fusionné dans `<T3CODE_HOME>/userdata/settings.json`. |
 | `code_server` | `false` | Active l'éditeur web **code-server** (VS Code) sur le port `8081`. |
 | `code_server_password` | *(vide)* | Mot de passe de code-server. **Requis** si `code_server` est activé. |
+
+Les **ports conteneur** sont fixes : `4096` pour T3 Code et `8081` pour
+code-server. Pour changer le port **hôte**, utiliser les réglages réseau de
+l'add-on dans Home Assistant ; `webui` et le watchdog suivent ce mapping. Il n'y
+a donc pas d'option de port à saisir.
 
 ## Éditeur web code-server (optionnel)
 
@@ -156,7 +158,8 @@ config persiste dans `/data/home/.config/gh`.
 2. L'add-on apparaît sous le nom du dépôt.
 3. **Installer**, renseigner les options, **Démarrer**.
 4. Onglet **Journal** : récupérer les informations d'appairage affichées par
-   `t3 serve`, puis ouvrir `http://<IP-box>:4096/` et appairer.
+   `t3 serve`, puis ouvrir `http://<IP-box>:4096/` (ou le port hôte configuré)
+   et appairer.
 5. *(Optionnel)* Activer `code_server`, définir `code_server_password`, puis
    ouvrir `http://<IP-box>:8081/`.
 6. Configurer finement dans l'UI T3 Code si besoin (persisté dans `/data`).
@@ -169,8 +172,14 @@ config persiste dans `/data/home/.config/gh`.
   (`repo`). Vérifier le journal.
 - **JSON ignoré** : le message « JSON invalide » apparaît dans le journal ;
   corriger le collage.
-- **Port inaccessible** : vérifier `t3_host`/`t3_port` ; le watchdog Supervisor
+- **Port inaccessible** : vérifier que le mapping réseau de l'add-on expose bien
+  le port conteneur `4096` (ou `8081` pour code-server). Le watchdog Supervisor
   teste `tcp://host:4096`.
+- **Avertissement « Option … does not exist in the schema » après mise à jour** :
+  les anciennes options `t3_port`, `t3_host` et `t3_version` ont été retirées car
+  elles n'étaient pas (ou partiellement) honorées. Le Supervisor les ignore ; le
+  message est inoffensif et disparaît après réinitialisation de la configuration
+  de l'add-on.
 - **code-server ne démarre pas** : vérifier que `code_server_password` est
   renseigné et que le port `8081` est libre sur l'hôte. Les erreurs et les
   redémarrages apparaissent dans le journal de l'add-on.
@@ -185,8 +194,9 @@ config persiste dans `/data/home/.config/gh`.
   `binaryPath` personnalisé ne pointe directement vers `opencode.real`.
 - **Keyring headless** : `@napi-rs/keyring` peut ne pas trouver de Secret Service ;
   vérifier le fallback fichier dans les logs.
-- **Sécurité réseau** : `0.0.0.0:4096` expose le port au LAN ; s'appuyer sur
-  l'auth T3 et éviter une exposition Internet directe (préférer Tailscale).
+- **Sécurité réseau** : le port `4096` (bind `0.0.0.0` dans le conteneur) est
+  exposé au LAN ; s'appuyer sur l'auth T3 et éviter une exposition Internet
+  directe (préférer Tailscale).
 
 ## Mises à jour
 
