@@ -49,6 +49,7 @@ def main() -> int:
     if services.exists():
         runtime_files.extend(path for path in sorted(services.rglob("*")) if path.is_file())
     run = "\n".join(path.read_text(encoding="utf-8") for path in runtime_files)
+    dockerfile = (ADDON / "Dockerfile").read_text(encoding="utf-8")
 
     options = config.get("options") or {}
     schema = config.get("schema") or {}
@@ -114,6 +115,24 @@ def main() -> int:
     check(
         re.search(r'^T3_HOST="0\.0\.0\.0"\s*$', run, re.MULTILINE) is not None,
         'run.sh must bind T3 to 0.0.0.0 with T3_HOST="0.0.0.0"',
+    )
+
+    for arg in ("OPENCODE_VERSION", "T3_VERSION", "CODE_SERVER_VERSION", "BUILD_VERSION"):
+        check(
+            re.search(rf"^ARG {arg}\b", dockerfile, re.MULTILINE) is not None,
+            f"Dockerfile must declare ARG {arg}",
+        )
+    check(
+        "versions.json" in dockerfile,
+        "Dockerfile must write the build-time versions stamp (versions.json)",
+    )
+    check(
+        "VERSIONS_FILE" in run,
+        "runtime must read the build-time versions stamp",
+    )
+    check(
+        "--version" not in run,
+        "runtime must not probe binaries with --version; read the build stamp instead",
     )
 
     for name in sorted(RETIRED_OPTIONS):

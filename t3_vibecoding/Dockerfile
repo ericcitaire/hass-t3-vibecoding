@@ -40,6 +40,7 @@ RUN set -eux; \
 
 ARG OPENCODE_VERSION=1.19.3
 ARG T3_VERSION=0.1.0
+ARG BUILD_VERSION
 
 RUN npm install -g --omit=dev "opencode-ai@${OPENCODE_VERSION}" "t3@${T3_VERSION}"
 
@@ -54,6 +55,16 @@ RUN mv /usr/lib/node_modules/opencode-ai/bin/opencode.exe /usr/lib/node_modules/
       > /usr/lib/node_modules/opencode-ai/bin/opencode.exe \
  && chmod 755 /usr/lib/node_modules/opencode-ai/bin/opencode.exe /usr/lib/node_modules/opencode-ai/bin/opencode.real
 
+RUN mkdir -p /etc/t3-vibecoding \
+ && jq -n \
+      --arg opencode "${OPENCODE_VERSION}" \
+      --arg t3 "${T3_VERSION}" \
+      --arg codeServer "${CODE_SERVER_VERSION}" \
+      --arg addon "${BUILD_VERSION}" \
+      '{opencode: $opencode, t3: $t3, codeServer: $codeServer, addon: $addon}' \
+      > /etc/t3-vibecoding/versions.json \
+ && chmod 644 /etc/t3-vibecoding/versions.json
+
 RUN groupadd -g 1000 dev \
  && useradd -u 1000 -g dev -m -s /bin/bash dev
 
@@ -62,7 +73,6 @@ COPY lib/ /usr/local/lib/t3-vibecoding/
 COPY services/ /etc/services.d/
 RUN chmod a+x /run.sh /etc/services.d/code-server/run
 
-ARG BUILD_VERSION
 LABEL \
   io.hass.version="${BUILD_VERSION}" \
   io.hass.type="app" \

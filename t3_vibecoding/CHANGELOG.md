@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.1
+
+- Les versions embarquées (`opencode`, `t3`, `code-server`, version de
+  l'add-on) sont inscrites au build dans `/etc/t3-vibecoding/versions.json`.
+- Le démarrage lit ce fichier au lieu de sonder trois binaires
+  (`--version`), ce qui supprime trois sous-processus et l'arbre XDG temporaire
+  de code-server.
+- Le vérificateur CI s'assure que le stamp existe et qu'aucune sonde runtime
+  `--version` ne réapparaît.
+
 ## 0.8.0
 
 - Centralisation de l'intake des identifiants et configurations dans

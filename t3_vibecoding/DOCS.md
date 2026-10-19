@@ -217,6 +217,10 @@ rafraîchir les applicatifs :
    `CHANGELOG.md` ;
 4. reconstruire l'add-on.
 
+Les versions effectivement embarquées sont inscrites au build dans
+`/etc/t3-vibecoding/versions.json` et journalisées au démarrage. Aucun binaire
+n'est sondé au runtime.
+
 Changer la valeur d'un `ARG` invalide le cache Docker des couches concernées : la
 nouvelle version est donc réellement réinstallée (contrairement à un rebuild à
 `Dockerfile` inchangé). Éviter `t3 update` dans le conteneur : la mise à jour

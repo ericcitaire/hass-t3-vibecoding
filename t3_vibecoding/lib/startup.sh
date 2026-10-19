@@ -9,6 +9,7 @@ T3_HOME="/data/t3code"
 T3_PORT=4096
 T3_HOST="0.0.0.0"
 CODE_SERVER_PORT=8081
+VERSIONS_FILE="${VERSIONS_FILE:-/etc/t3-vibecoding/versions.json}"
 STARTUP_PATH="${STARTUP_PATH:-/usr/local/bin:/usr/bin:/bin:${HOME_DIR}/.opencode/bin}"
 
 declare -A STARTUP_OPTIONS=()
@@ -66,21 +67,17 @@ startup_prepare_home() {
 }
 
 startup_log_versions() {
-  local opencode_version t3_cli_version code_server_version version_tmp
+  local opencode_version="inconnu"
+  local t3_cli_version="inconnu"
+  local code_server_version="inconnue"
 
-  opencode_version="$(startup_run_as_dev opencode --version 2>/dev/null || echo 'inconnu')"
-  t3_cli_version="$(startup_run_as_dev t3 --version 2>/dev/null || echo 'inconnu')"
-  version_tmp="$(mktemp -d)"
-  chown "${DEV_UID}:${DEV_GID}" "${version_tmp}"
-  code_server_version="$(
-    env HOME="${HOME_DIR}" \
-      XDG_CONFIG_HOME="${version_tmp}/config" \
-      XDG_DATA_HOME="${version_tmp}/data" \
-      PATH="${STARTUP_PATH}" \
-      s6-setuidgid "${DEV_USER}" \
-      code-server --version 2>/dev/null | head -n1 || echo 'inconnue'
-  )"
-  rm -rf "${version_tmp}"
+  if [ -r "${VERSIONS_FILE}" ]; then
+    opencode_version="$(jq -r '.opencode // "inconnu"' "${VERSIONS_FILE}")"
+    t3_cli_version="$(jq -r '.t3 // "inconnu"' "${VERSIONS_FILE}")"
+    code_server_version="$(jq -r '.codeServer // "inconnue"' "${VERSIONS_FILE}")"
+  else
+    bashio::log.warning "Fichier de versions absent : ${VERSIONS_FILE}"
+  fi
 
   bashio::log.info "Versions embarquées : opencode ${opencode_version}, t3 ${t3_cli_version}, code-server ${code_server_version}"
 }
