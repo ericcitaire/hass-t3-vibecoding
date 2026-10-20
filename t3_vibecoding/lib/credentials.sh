@@ -9,7 +9,7 @@ _credentials_write_json() {
     return 1
   fi
   if ! printf '%s' "${value}" | jq -e . >/dev/null 2>&1; then
-    bashio::log.warning "${label} ignoré : JSON invalide"
+    bashio::log.warning "${label} ignored: invalid JSON"
     return 1
   fi
 
@@ -30,7 +30,7 @@ _credentials_merge_json() {
     return 1
   fi
   if ! printf '%s' "${value}" | jq -e . >/dev/null 2>&1; then
-    bashio::log.warning "${label} ignoré : JSON invalide"
+    bashio::log.warning "${label} ignored: invalid JSON"
     return 1
   fi
 
@@ -55,15 +55,15 @@ credentials_authenticate_gh() {
     return 1
   fi
 
-  bashio::log.info "Authentification de la CLI gh"
+  bashio::log.info "Authenticating the gh CLI"
   if printf '%s' "${STARTUP_OPTIONS[github_token]}" | startup_run_as_dev gh auth login --with-token; then
     if ! startup_run_as_dev gh auth setup-git; then
-      bashio::log.warning "gh auth setup-git a échoué"
+      bashio::log.warning "gh auth setup-git failed"
     fi
     return 0
   fi
 
-  bashio::log.warning "gh auth login a échoué (token invalide ?)"
+  bashio::log.warning "gh auth login failed (invalid token?)"
   return 1
 }
 
@@ -80,7 +80,7 @@ credentials_apply() {
     "${HOME_DIR}/.config/opencode/opencode.json" \
     644 \
     "opencode_config_json" \
-    "Écriture de la configuration OpenCode"; then
+    "Writing OpenCode configuration"; then
     applied+=("opencode-config")
   fi
 
@@ -89,7 +89,7 @@ credentials_apply() {
     "${HOME_DIR}/.local/share/opencode/auth.json" \
     600 \
     "opencode_auth_json" \
-    "Écriture des identifiants OpenCode"; then
+    "Writing OpenCode credentials"; then
     applied+=("opencode-auth")
   fi
 
@@ -98,7 +98,7 @@ credentials_apply() {
     "${T3_HOME}/userdata/settings.json" \
     600 \
     "t3_settings_json" \
-    "Fusion des réglages T3 Code (settings.json)"; then
+    "Merging T3 Code settings (settings.json)"; then
     applied+=("t3-settings")
   fi
 
@@ -109,7 +109,7 @@ credentials_apply() {
   done
 
   if [ "${#applied[@]}" -gt 0 ]; then
-    bashio::log.info "Identifiants/config appliqués : ${applied[*]}"
+    bashio::log.info "Applied credentials/config: ${applied[*]}"
   fi
 }
 
@@ -122,7 +122,7 @@ credentials_env() {
     if [[ "${name}" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
       STARTUP_EXTRA_ENV+=("${name}=${value}")
     elif [ -n "${name}" ]; then
-      bashio::log.warning "env_vars : nom ignoré (invalide) : ${name}"
+      bashio::log.warning "env_vars: ignoring invalid name: ${name}"
     fi
   done < <(bashio::config 'env_vars' | jq -r '.[]? | [.name, .value] | @tsv' 2>/dev/null || true)
 }

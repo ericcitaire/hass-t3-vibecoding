@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2034,SC2154 # test fixtures and globals from sourced helpers
 set -euo pipefail
 
+# shellcheck source=/dev/null
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/helpers.sh"
 # shellcheck source=/dev/null
 source "${ROOT}/t3_vibecoding/lib/startup.sh"
@@ -47,6 +49,7 @@ test_prepare_home() {
 
 test_run_as_dev() {
   local output
+  # shellcheck disable=SC2016 # $HOME must expand inside the child shell
   output="$(startup_run_as_dev sh -c 'printf "%s" "$HOME"')"
   assert_eq "${output}" "${HOME_DIR}"
 }

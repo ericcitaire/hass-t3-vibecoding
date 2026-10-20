@@ -1,15 +1,19 @@
-# T3 Code + OpenCode — add-on Home Assistant
+# T3 Code + OpenCode — Home Assistant add-on
 
-Add-on local Home Assistant OS pour le **vibe coding headless** : il embarque
-tout le tooling (`git`, `node`, `npm`, `ripgrep`, `fd`, `gh`, build tools,
-`python3`), installe **OpenCode** et **T3 Code**, et démarre automatiquement
-`t3 serve` sous un utilisateur **non-root** (`dev`).
+Local Home Assistant OS add-on for **headless vibe coding**: it bundles the
+developer tooling (`git`, `node`, `npm`, `ripgrep`, `fd`, `gh`, build tools,
+`python3`), installs **OpenCode** and **T3 Code**, and starts `t3 serve`
+automatically as a **non-root** user (`dev`).
 
-- Interface web T3 Code exposée sur `http://<hôte>:4096/` (appairage géré par T3).
-- Éditeur web optionnel **code-server** (VS Code) sur `http://<hôte>:8081/`,
-  activable et protégé par mot de passe depuis les options de l'add-on.
-- État persistant dans `/data` (survit aux mises à jour de l'add-on).
-- Workspace par défaut : `/share/vibecoding` (dossier HA `share`).
-- Redémarrage automatique au boot de la box (`boot: auto`).
+- T3 Code web UI on `http://<host>:4096/` (pairing handled by T3).
+- Optional **code-server** web editor (VS Code) on `http://<host>:8081/`,
+  enabled and password-protected from the add-on options.
+- Persistent state in `/data` (survives add-on updates).
+- Default workspace: `/share/vibecoding` (HA `share` folder).
+- Automatic restart on boot (`boot: auto`).
 
-Voir [DOCS.md](DOCS.md) pour l'installation, l'appairage et le dépannage.
+See [DOCS.md](DOCS.md) for installation, pairing and troubleshooting.
+
+The add-on icon (`icon.png`) uses the
+[T3 Code](https://github.com/pingdotgg/t3code) icon
+(`assets/prod/black-universal-1024.png`, MIT license), resized to 128 × 128.

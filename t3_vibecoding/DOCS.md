@@ -1,80 +1,82 @@
 # T3 Code + OpenCode
 
-Environnement de **vibe coding headless** packagé comme add-on local Home
-Assistant OS. Il exécute un serveur **T3 Code** (`t3 serve`, mode web) avec
-**OpenCode** comme harness, sous un utilisateur **non-root** `dev` (uid/gid 1000).
+A **headless vibe coding** environment packaged as a local Home Assistant OS
+add-on. It runs a **T3 Code** server (`t3 serve`, web mode) with **OpenCode** as
+the harness, as a **non-root** user `dev` (uid/gid 1000).
 
-## Composants embarqués
+## Bundled components
 
 - `git`, `gh` (GitHub CLI)
 - `node` 22 + `npm`
 - `ripgrep`, `fd`, `jq`, `less`, `vim`, `nano`
-- `build-essential`, `python3`, `openssh-client`
-- `opencode-ai` 1.19.3 et `t3` 0.1.0 (versions stables épinglées, installées
-  globalement via npm)
-- `code-server` 4.141.0 (VS Code dans le navigateur, optionnel)
+- `build-essential`, `python3` (with `pip` and PyYAML), `openssh-client`
+- `opencode-ai` 1.19.3 and `t3` 0.1.0 (pinned stable versions, installed
+  globally with npm)
+- `code-server` 4.141.0 (VS Code in the browser, optional)
+- System libraries and fonts for T3's headless preview browser
+  (Chromium/Playwright)
 
 ## Options
 
-| Option | Défaut | Description |
+| Option | Default | Description |
 |---|---|---|
-| `workspace` | `/share/vibecoding` | Répertoire de travail / projet par défaut. |
-| `git_name` | *(vide)* | `user.name` global git pour `dev`. |
-| `git_email` | *(vide)* | `user.email` global git pour `dev`. |
-| `github_token` | *(vide)* | Token GitHub pour `gh auth login` (+ export `GH_TOKEN`). |
-| `env_vars` | `[]` | Variables d'environnement passées à T3 Code. |
-| `opencode_config_json` | *(vide)* | JSON → `~/.config/opencode/opencode.json`. |
-| `opencode_auth_json` | *(vide)* | JSON → `~/.local/share/opencode/auth.json`. |
-| `t3_settings_json` | *(vide)* | JSON fusionné dans `<T3CODE_HOME>/userdata/settings.json`. |
-| `code_server` | `false` | Active l'éditeur web **code-server** (VS Code) sur le port `8081`. |
-| `code_server_password` | *(vide)* | Mot de passe de code-server. **Requis** si `code_server` est activé. |
+| `workspace` | `/share/vibecoding` | Default working/project directory. |
+| `git_name` | *(empty)* | Global git `user.name` for `dev`. |
+| `git_email` | *(empty)* | Global git `user.email` for `dev`. |
+| `github_token` | *(empty)* | GitHub token for `gh auth login` (+ exports `GH_TOKEN`). |
+| `env_vars` | `[]` | Environment variables passed to T3 Code. |
+| `opencode_config_json` | *(empty)* | JSON → `~/.config/opencode/opencode.json`. |
+| `opencode_auth_json` | *(empty)* | JSON → `~/.local/share/opencode/auth.json`. |
+| `t3_settings_json` | *(empty)* | JSON merged into `<T3CODE_HOME>/userdata/settings.json`. |
+| `code_server` | `false` | Enables the **code-server** web editor (VS Code) on port `8081`. |
+| `code_server_password` | *(empty)* | code-server password. **Required** when `code_server` is enabled. |
 
-Les **ports conteneur** sont fixes : `4096` pour T3 Code et `8081` pour
-code-server. Pour changer le port **hôte**, utiliser les réglages réseau de
-l'add-on dans Home Assistant ; `webui` et le watchdog suivent ce mapping. Il n'y
-a donc pas d'option de port à saisir.
+The **container ports** are fixed: `4096` for T3 Code and `8081` for
+code-server. To change the **host** port, use the add-on network settings in
+Home Assistant; `webui` and the watchdog follow that mapping. There is no port
+option to fill in.
 
-## Éditeur web code-server (optionnel)
+## Optional code-server web editor
 
-En plus de T3 Code, l'add-on peut lancer **code-server**, un VS Code complet
-accessible dans le navigateur (éditeur, terminal, LSP, extensions Open VSX).
+In addition to T3 Code, the add-on can run **code-server**, a full VS Code
+instance in the browser (editor, terminal, LSP, Open VSX extensions).
 
-1. Renseigner `code_server_password` (option masquée).
-2. Cocher `code_server`.
-3. Démarrer / redémarrer l'add-on.
-4. Ouvrir `http://<IP-box>:8081/` et se connecter avec ce mot de passe.
+1. Set `code_server_password` (masked option).
+2. Check `code_server`.
+3. Start / restart the add-on.
+4. Open `http://<box-IP>:8081/` and sign in with that password.
 
-Points importants :
+Important points:
 
-- Le port est **fixe** (`8081`) et distinct de T3 Code (`4096`). code-server
-  n'est pas exposé via l'ingress Home Assistant (sous-chemin non supporté) :
-  il s'ouvre dans un onglet séparé.
-- Si `code_server` est activé sans mot de passe, code-server n'est **pas**
-  démarré et un avertissement apparaît dans le journal.
-- Le mot de passe est réécrit dans `~/.config/code-server/config.yaml` à chaque
-  démarrage : le modifier depuis l'UI code-server n'est pas persistant, utiliser
-  l'option de l'add-on.
-- code-server tourne sous l'utilisateur `dev`, avec le même `HOME` et le même
-  workspace que T3 Code (`/share/vibecoding` par défaut).
-- code-server est lancé comme **service s6** supervisé : il redémarre
-  automatiquement s'il s'arrête et est arrêté proprement avec l'add-on.
-- Le mot de passe et le port donnent un **accès shell complet** : ne pas exposer
-  `8081` sur Internet. Rester sur le LAN ou passer par un VPN (Tailscale, etc.).
-- Les réglages et extensions sont persistés dans
-  `/data/home/.local/share/code-server` ; la configuration dans
-  `/data/home/.config/code-server`.
-- Les extensions proviennent d'**Open VSX** (le marketplace Microsoft n'est pas
-  accessible depuis code-server).
+- The port is **fixed** (`8081`) and separate from T3 Code (`4096`).
+  code-server is not exposed through Home Assistant ingress (sub-paths are not
+  supported): open it in a separate tab.
+- If `code_server` is enabled without a password, code-server is **not**
+  started and a warning appears in the log.
+- The password is rewritten into `~/.config/code-server/config.yaml` at every
+  start: changing it from the code-server UI is not persistent, use the add-on
+  option.
+- code-server runs as user `dev`, with the same `HOME` and workspace as T3 Code
+  (`/share/vibecoding` by default).
+- code-server runs as a supervised **s6 service**: it restarts automatically if
+  it stops, and stops cleanly with the add-on.
+- The password and port grant **full shell access**: do not expose `8081` to the
+  Internet. Stay on the LAN or use a VPN (Tailscale, etc.).
+- Settings and extensions persist in `/data/home/.local/share/code-server`;
+  configuration lives in `/data/home/.config/code-server`.
+- Extensions come from **Open VSX** (the Microsoft marketplace is not reachable
+  from code-server).
 
-## Configuration des providers / clés d'API
+## Provider / API key configuration
 
-T3 Code délègue l'auth à ses *drivers* (OpenCode, Codex, Claude, Cursor, Grok).
-On configure donc les identifiants **en amont**, depuis l'add-on.
+T3 Code delegates authentication to its *drivers* (OpenCode, Codex, Claude,
+Cursor, Grok). Credentials are therefore configured **upstream**, from the
+add-on.
 
-### 1. Variables d'environnement (le plus simple)
+### 1. Environment variables (simplest)
 
-Champ `env_vars` : liste de paires `name` / `value`. Exemples de clés reconnues
-par OpenCode :
+`env_vars` field: a list of `name` / `value` pairs. Examples of keys recognised
+by OpenCode:
 
 ```yaml
 env_vars:
@@ -86,15 +88,15 @@ env_vars:
     value: "sk-or-..."
 ```
 
-Les valeurs sont de type `password` (masquées dans l'UI).
+Values use the `password` type (masked in the UI).
 
-Les variables `env_vars` et `GH_TOKEN` sont transmises à **T3 Code et
-code-server**, qui partagent le même environnement d'exécution.
+`env_vars` and `GH_TOKEN` are passed to **both T3 Code and code-server**, which
+share the same runtime environment.
 
-### 2. Config OpenCode (JSON)
+### 2. OpenCode config (JSON)
 
-Coller dans `opencode_config_json` le contenu de `~/.config/opencode/opencode.json`
-(providers, modèles, options) :
+Paste the contents of `~/.config/opencode/opencode.json` (providers, models,
+options) into `opencode_config_json`:
 
 ```json
 {
@@ -106,23 +108,23 @@ Coller dans `opencode_config_json` le contenu de `~/.config/opencode/opencode.js
 }
 ```
 
-### 3. Auth OpenCode (JSON)
+### 3. OpenCode auth (JSON)
 
-Pour des identifiants au format `opencode auth` (api/oauth), coller dans
-`opencode_auth_json` le contenu de `~/.local/share/opencode/auth.json`.
+For credentials in the `opencode auth` format (api/oauth), paste the contents of
+`~/.local/share/opencode/auth.json` into `opencode_auth_json`.
 
-> Les JSON sont validés par `jq` au démarrage, puis écrits avant le lancement de
-> T3 Code. Un JSON invalide est ignoré avec un avertissement dans le journal.
+> JSON is validated with `jq` at startup, then written before T3 Code starts.
+> Invalid JSON is ignored with a warning in the log.
 
-### 4. Réglages T3 Code (`settings.json`)
+### 4. T3 Code settings (`settings.json`)
 
-Par défaut **aucun driver n'est activé** dans T3 Code, et le modèle de génération
-par défaut pointe sur `codex` (indisponible ici). Pour que l'add-on soit utilisable
-dès le départ, renseigner `t3_settings_json`. Ce JSON est **fusionné
-récursivement** dans `<T3CODE_HOME>/userdata/settings.json` : tes clés gagnent,
-les autres (réglages faits dans l'UI) sont préservées.
+By default **no driver is enabled** in T3 Code, and the default generation model
+points at `codex` (unavailable here). To make the add-on usable out of the box,
+set `t3_settings_json`. This JSON is **recursively merged** into
+`<T3CODE_HOME>/userdata/settings.json`: your keys win, and the others (settings
+made in the UI) are preserved.
 
-Exemple : activer le driver OpenCode et prendre DeepSeek par défaut.
+Example: enable the OpenCode driver and use DeepSeek by default.
 
 ```json
 {
@@ -136,92 +138,100 @@ Exemple : activer le driver OpenCode et prendre DeepSeek par défaut.
 }
 ```
 
-Drivers disponibles sous `providers` : `opencode`, `codex`, `claudeAgent`,
-`cursor`, `grok`, `antigravity` — chacun avec un champ `enabled` (défaut `false`).
+Drivers available under `providers`: `opencode`, `codex`, `claudeAgent`,
+`cursor`, `grok`, `antigravity` — each with an `enabled` field (default
+`false`).
 
-> Le fichier vit dans `/data/t3code/userdata/settings.json` et survit aux mises à
-> jour de l'add-on.
+> The file lives in `/data/t3code/userdata/settings.json` and survives add-on
+> updates.
 
 ### 5. GitHub CLI (`gh`)
 
-Renseigner `github_token` (classic PAT, scope `repo`) : l'add-on exécute
-`gh auth login --with-token` + `gh auth setup-git`, et exporte `GH_TOKEN`. La
-config persiste dans `/data/home/.config/gh`.
+Set `github_token` (classic PAT, `repo` scope): the add-on runs
+`gh auth login --with-token` + `gh auth setup-git`, and exports `GH_TOKEN`. The
+configuration persists in `/data/home/.config/gh`.
 
-## Persistance
+## Persistence
 
-| Chemin conteneur | Contenu | Persistant |
+| Container path | Content | Persistent |
 |---|---|---|
-| `/data/home` | `HOME` de `dev`, config OpenCode/gh/code-server, secrets | oui (`/data`) |
-| `/data/home/.local/share/code-server` | Réglages et extensions code-server | oui (`/data`) |
-| `/data/t3code` | `T3CODE_HOME` : userdata, caches, worktrees, logs | oui (`/data`) |
-| `/share/vibecoding` | Code source des projets | oui (dossier `share`) |
+| `/data/home` | `dev`'s `HOME`, OpenCode/gh/code-server config, secrets | yes (`/data`) |
+| `/data/home/.local/share/code-server` | code-server settings and extensions | yes (`/data`) |
+| `/data/t3code` | `T3CODE_HOME`: userdata, caches, worktrees, logs | yes (`/data`) |
+| `/share/vibecoding` | Project source code | yes (`share` folder) |
 
 ## Installation
 
-1. **Paramètres → Add-ons → Boutique → ⋮ → Dépôts**, ajouter l'URL du dépôt.
-2. L'add-on apparaît sous le nom du dépôt.
-3. **Installer**, renseigner les options, **Démarrer**.
-4. Onglet **Journal** : récupérer les informations d'appairage affichées par
-   `t3 serve`, puis ouvrir `http://<IP-box>:4096/` (ou le port hôte configuré)
-   et appairer.
-5. *(Optionnel)* Activer `code_server`, définir `code_server_password`, puis
-   ouvrir `http://<IP-box>:8081/`.
-6. Configurer finement dans l'UI T3 Code si besoin (persisté dans `/data`).
+1. **Settings → Add-ons → Add-on Store → ⋮ → Repositories**, add the repository
+   URL.
+2. The add-on appears under the repository name.
+3. **Install**, fill in the options, **Start**.
+4. **Log** tab: copy the pairing information printed by `t3 serve`, then open
+   `http://<box-IP>:4096/` (or the configured host port) and pair.
+5. *(Optional)* Enable `code_server`, set `code_server_password`, then open
+   `http://<box-IP>:8081/`.
+6. Fine-tune in the T3 Code UI if needed (persisted in `/data`).
 
-## Dépannage
+## Troubleshooting
 
-- **L'add-on ne démarre pas / `init: false`** : la base Home Assistant embarque
-  s6-overlay v3 ; ne pas passer `init: true`.
-- **`gh auth login` échoue** : token invalide/expiré ou scope insuffisant
-  (`repo`). Vérifier le journal.
-- **JSON ignoré** : le message « JSON invalide » apparaît dans le journal ;
-  corriger le collage.
-- **Port inaccessible** : vérifier que le mapping réseau de l'add-on expose bien
-  le port conteneur `4096` (ou `8081` pour code-server). Le watchdog Supervisor
-  teste `tcp://host:4096`.
-- **Avertissement « Option … does not exist in the schema » après mise à jour** :
-  les anciennes options `t3_port`, `t3_host` et `t3_version` ont été retirées car
-  elles n'étaient pas (ou partiellement) honorées. Le Supervisor les ignore ; le
-  message est inoffensif et disparaît après réinitialisation de la configuration
-  de l'add-on.
-- **code-server ne démarre pas** : vérifier que `code_server_password` est
-  renseigné et que le port `8081` est libre sur l'hôte. Les erreurs et les
-  redémarrages apparaissent dans le journal de l'add-on.
-- **Mot de passe code-server refusé** : le mot de passe est réécrit depuis
-  l'option `code_server_password` à chaque démarrage ; le modifier dans
-  l'éditeur ne suffit pas.
-- **`OpenCode CLI version probe timed out after 4 seconds`** : le binaire
-  OpenCode peut mettre plus de 4 secondes à démarrer sur certaines machines,
-  alors que T3 Code impose ce délai à `opencode --version`. L'add-on installe un
-  wrapper qui répond immédiatement à `--version` ; les autres commandes sont
-  transmises au binaire réel. Si le message persiste, vérifier qu'aucun
-  `binaryPath` personnalisé ne pointe directement vers `opencode.real`.
-- **Keyring headless** : `@napi-rs/keyring` peut ne pas trouver de Secret Service ;
-  vérifier le fallback fichier dans les logs.
-- **Sécurité réseau** : le port `4096` (bind `0.0.0.0` dans le conteneur) est
-  exposé au LAN ; s'appuyer sur l'auth T3 et éviter une exposition Internet
-  directe (préférer Tailscale).
+- **The add-on does not start / `init: false`**: the Home Assistant base image
+  ships s6-overlay v3; do not set `init: true`.
+- **`gh auth login` fails**: invalid/expired token or insufficient scope
+  (`repo`). Check the log.
+- **JSON ignored**: an "invalid JSON" message appears in the log; fix the pasted
+  content.
+- **Port unreachable**: check that the add-on network mapping exposes container
+  port `4096` (or `8081` for code-server). The Supervisor watchdog tests
+  `tcp://host:4096`.
+- **"Option … does not exist in the schema" warning after an update**: the old
+  `t3_port`, `t3_host` and `t3_version` options were removed because they were
+  not (or only partially) honoured. The Supervisor ignores them; the message is
+  harmless and disappears after resetting the add-on configuration.
+- **code-server does not start**: check that `code_server_password` is set and
+  that port `8081` is free on the host. Errors and restarts appear in the
+  add-on log.
+- **code-server password rejected**: the password is rewritten from the
+  `code_server_password` option at every start; changing it in the editor is not
+  enough.
+- **`OpenCode CLI version probe timed out after 4 seconds`**: the OpenCode
+  binary can take more than 4 seconds to start on some machines, while T3 Code
+  enforces that timeout on `opencode --version`. The add-on installs a wrapper
+  that answers `--version` immediately; other commands are forwarded to the real
+  binary. If the message persists, check that no custom `binaryPath` points
+  directly at `opencode.real`.
+- **Preview unavailable**: if T3 reports "This host is missing libraries T3's
+  browser needs (…)" or "inline preview unavailable on this host", the headless
+  browser libraries are missing from the image. They are normally installed by
+  the `Dockerfile`: check that the add-on was **rebuilt** (not just restarted).
+  The browser itself (`chrome-headless-shell`, ~115 MiB) is downloaded by T3 on
+  first use into `/data/t3code/tools`: that first run needs network access to
+  `storage.googleapis.com`, then the binary persists in `/data`.
+- **Headless keyring**: `@napi-rs/keyring` may not find a Secret Service; check
+  the file fallback in the logs.
+- **Network security**: port `4096` (bound to `0.0.0.0` in the container) is
+  exposed to the LAN; rely on T3 auth and avoid direct Internet exposure
+  (prefer Tailscale).
 
-## Mises à jour
+## Updates
 
-Les versions d'`opencode-ai`, de `t3` et de `code-server` sont épinglées dans le
-`Dockerfile` via les arguments de build `OPENCODE_VERSION`, `T3_VERSION` et
-`CODE_SERVER_VERSION` (actuellement `1.19.3`, `0.1.0` et `4.141.0`). Pour
-rafraîchir les applicatifs :
+`opencode-ai`, `t3` and `code-server` versions are pinned in the `Dockerfile`
+through the `OPENCODE_VERSION`, `T3_VERSION` and `CODE_SERVER_VERSION` build
+args (currently `1.19.3`, `0.1.0` and `4.141.0`). To refresh the applications:
 
-1. rechercher la dernière version stable sur npm (`npm view opencode-ai version`,
-   `npm view t3 version`) et sur les releases GitHub de code-server ;
-2. mettre à jour les valeurs par défaut des `ARG` dans le `Dockerfile` ;
-3. incrémenter `version` dans `config.yaml` et ajouter une entrée au
-   `CHANGELOG.md` ;
-4. reconstruire l'add-on.
+1. look up the latest stable version on npm (`npm view opencode-ai version`,
+   `npm view t3 version`) and in the code-server GitHub releases;
+2. update the `ARG` defaults in the `Dockerfile`;
+3. bump `version` in `config.yaml` and add a `CHANGELOG.md` entry;
+4. rebuild the add-on.
 
-Les versions effectivement embarquées sont inscrites au build dans
-`/etc/t3-vibecoding/versions.json` et journalisées au démarrage. Aucun binaire
-n'est sondé au runtime.
+The versions actually bundled are written at build time into
+`/etc/t3-vibecoding/versions.json` and logged at startup. No binary is probed at
+runtime.
 
-Changer la valeur d'un `ARG` invalide le cache Docker des couches concernées : la
-nouvelle version est donc réellement réinstallée (contrairement à un rebuild à
-`Dockerfile` inchangé). Éviter `t3 update` dans le conteneur : la mise à jour
-serait perdue à la reconstruction et moins reproductible.
+Changing an `ARG` value invalidates the Docker cache of the affected layers, so
+the new version is really installed (unlike a rebuild with an unchanged
+`Dockerfile`). Avoid `t3 update` inside the container: the update would be lost
+on rebuild and is less reproducible.
+
+When bumping `T3_VERSION`, the browser package list (`browser-packages.txt`) is
+checked against T3's own `DEBIAN_PACKAGES` by CI. Update it if that check fails.

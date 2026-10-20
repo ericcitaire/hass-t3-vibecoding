@@ -7,10 +7,19 @@ ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8
 ARG BUILD_ARCH
 ARG CODE_SERVER_VERSION=4.141.0
 
+# System libraries for T3 Code's headless preview browser live in
+# browser-packages.txt so CI can compare them with `t3 browser setup`'s list.
+# Fonts are required for pages to render correctly.
+COPY browser-packages.txt /tmp/t3-browser-packages.txt
+
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates curl gnupg git jq ripgrep fd-find less vim nano \
-      build-essential python3 unzip xz-utils procps openssh-client \
+      build-essential python3 python3-pip python3-yaml unzip xz-utils \
+      procps openssh-client \
+      $(cat /tmp/t3-browser-packages.txt) \
+      fontconfig fonts-liberation fonts-dejavu-core \
+ && rm -f /tmp/t3-browser-packages.txt \
  && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
  && apt-get install -y --no-install-recommends nodejs \
  && mkdir -p -m 755 /etc/apt/keyrings \

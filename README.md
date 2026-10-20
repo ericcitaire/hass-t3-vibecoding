@@ -1,33 +1,37 @@
 # Home Assistant add-ons by Eric
 
-Dépôt d'add-ons locaux pour Home Assistant OS.
+Local add-on repository for Home Assistant OS.
 
-## Ajouter ce dépôt à Home Assistant
+## Adding this repository to Home Assistant
 
-1. **Paramètres → Add-ons → Boutique**.
-2. Menu **⋮ → Dépôts**.
-3. Coller l'URL du dépôt :
-   - Dépôt public : `https://github.com/ericcitaire/hass-t3-vibecoding`
-   - Dépôt privé : `https://<TOKEN>@github.com/ericcitaire/hass-t3-vibecoding`
-     (token GitHub *Personal access token* avec le scope `repo`).
-4. **Ajouter**, puis recharger la page. Les add-ons apparaissent sous le nom du
-   dépôt.
+1. **Settings → Add-ons → Add-on Store**.
+2. **⋮ → Repositories**.
+3. Paste the repository URL:
+   - Public repository: `https://github.com/ericcitaire/hass-t3-vibecoding`
+   - Private repository: `https://<TOKEN>@github.com/ericcitaire/hass-t3-vibecoding`
+     (GitHub *personal access token* with the `repo` scope).
+4. **Add**, then reload the page. The add-ons appear under the repository name.
 
 ## Add-ons
 
 | Add-on | Description |
 |---|---|
-| [T3 Code + OpenCode](t3_vibecoding) | Vibe coding headless : serveur T3 Code + OpenCode, tooling dev, user non-root. |
+| [T3 Code + OpenCode](t3_vibecoding) | Headless vibe coding: T3 Code server + OpenCode, developer tooling, non-root user. |
 
-## Vérifications
+## Checks
 
-La cohérence des options entre `config.yaml`, les traductions, `DOCS.md` et
-`run.sh`, ainsi que celle des ports conteneur, est vérifiée par la CI :
+CI verifies that options stay consistent across `config.yaml`, translations,
+`DOCS.md` and `run.sh`, that container ports agree, and that the browser package
+list matches the one embedded in T3 Code:
 
 ```bash
-python3 -m pip install --user pyyaml
 python3 scripts/verify-options.py
 bash tests/test-startup.sh
 bash tests/test-code-server.sh
 bash tests/test-credentials.sh
+# With a t3 binary from the installed npm package:
+python3 scripts/verify-browser-packages.py --binary /path/to/t3
 ```
+
+The add-on image ships Python and PyYAML, so `verify-options.py` runs without
+installing anything.

@@ -8,6 +8,7 @@ HOME_DIR="/data/home"
 T3_HOME="/data/t3code"
 T3_PORT=4096
 T3_HOST="0.0.0.0"
+# shellcheck disable=SC2034 # consumed by lib/code-server.sh
 CODE_SERVER_PORT=8081
 VERSIONS_FILE="${VERSIONS_FILE:-/etc/t3-vibecoding/versions.json}"
 STARTUP_PATH="${STARTUP_PATH:-/usr/local/bin:/usr/bin:/bin:${HOME_DIR}/.opencode/bin}"
@@ -52,7 +53,7 @@ startup_exec_as_dev() {
 startup_prepare_home() {
   local workspace="${STARTUP_OPTIONS[workspace]}"
 
-  bashio::log.info "Préparation des répertoires persistants"
+  bashio::log.info "Preparing persistent directories"
   mkdir -p "${HOME_DIR}" "${T3_HOME}" "${workspace}"
   chown -R "${DEV_UID}:${DEV_GID}" "${HOME_DIR}" "${T3_HOME}"
   chown "${DEV_UID}:${DEV_GID}" "${workspace}"
@@ -67,23 +68,23 @@ startup_prepare_home() {
 }
 
 startup_log_versions() {
-  local opencode_version="inconnu"
-  local t3_cli_version="inconnu"
-  local code_server_version="inconnue"
+  local opencode_version="unknown"
+  local t3_cli_version="unknown"
+  local code_server_version="unknown"
 
   if [ -r "${VERSIONS_FILE}" ]; then
-    opencode_version="$(jq -r '.opencode // "inconnu"' "${VERSIONS_FILE}")"
-    t3_cli_version="$(jq -r '.t3 // "inconnu"' "${VERSIONS_FILE}")"
-    code_server_version="$(jq -r '.codeServer // "inconnue"' "${VERSIONS_FILE}")"
+    opencode_version="$(jq -r '.opencode // "unknown"' "${VERSIONS_FILE}")"
+    t3_cli_version="$(jq -r '.t3 // "unknown"' "${VERSIONS_FILE}")"
+    code_server_version="$(jq -r '.codeServer // "unknown"' "${VERSIONS_FILE}")"
   else
-    bashio::log.warning "Fichier de versions absent : ${VERSIONS_FILE}"
+    bashio::log.warning "Version stamp missing: ${VERSIONS_FILE}"
   fi
 
-  bashio::log.info "Versions embarquées : opencode ${opencode_version}, t3 ${t3_cli_version}, code-server ${code_server_version}"
+  bashio::log.info "Bundled versions: opencode ${opencode_version}, t3 ${t3_cli_version}, code-server ${code_server_version}"
 }
 
 startup_exec_t3() {
-  bashio::log.info "Démarrage de T3 Code sur ${T3_HOST}:${T3_PORT} (user ${DEV_USER}, workspace=${STARTUP_OPTIONS[workspace]})"
+  bashio::log.info "Starting T3 Code on ${T3_HOST}:${T3_PORT} (user ${DEV_USER}, workspace=${STARTUP_OPTIONS[workspace]})"
 
   startup_exec_as_dev \
     t3 serve \

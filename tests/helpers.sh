@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Shared setup and assertions for the add-on shell module tests.
+# shellcheck disable=SC2034 # shared globals consumed by the sourced test files
 
 HELPERS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${HELPERS_DIR}/.." && pwd)"

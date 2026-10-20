@@ -1,9 +1,9 @@
 name: "T3 Code + OpenCode"
-version: "0.8.1"
+version: "0.8.2"
 slug: "t3_vibecoding"
 description: >-
-  Environnement de vibe coding headless : serveur T3 Code + OpenCode, avec git,
-  node, ripgrep et outils usuels, exécutés sous un utilisateur non-root.
+  Headless vibe coding environment: T3 Code + OpenCode server, with git, node,
+  ripgrep and common tooling, running as a non-root user.
 url: "https://github.com/pingdotgg/t3code"
 arch:
   - amd64

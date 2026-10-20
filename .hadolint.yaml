@@ -1,0 +1,9 @@
+ignored:
+  # Home Assistant supplies BUILD_FROM; the base image tag is pinned there.
+  - DL3006
+  # Add-on packages follow the base image; version pinning is HA's job.
+  - DL3008
+  # mkdir -p -m is intentional for the apt keyring directory.
+  - SC2174
+  # Single quotes are intentional in the OpenCode version wrapper.
+  - SC2016

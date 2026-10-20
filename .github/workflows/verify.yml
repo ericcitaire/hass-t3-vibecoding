@@ -1,4 +1,4 @@
-name: Verify add-on options
+name: Verify add-on
 
 on:
   push:
@@ -24,3 +24,42 @@ jobs:
         run: bash tests/test-code-server.sh
       - name: Test credentials module
         run: bash tests/test-credentials.sh
+
+  browser-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install T3
+        run: |
+          T3_VERSION="$(sed -n 's/^ARG T3_VERSION=//p' t3_vibecoding/Dockerfile)"
+          npm install --no-save --prefix "${RUNNER_TEMP}/t3" "t3@${T3_VERSION}"
+      - name: Compare browser packages with T3
+        run: |
+          T3_BINARY="$(find "${RUNNER_TEMP}/t3/node_modules/@t3code" -type f -name t3 -print -quit)"
+          python3 scripts/verify-browser-packages.py --binary "${T3_BINARY}"
+
+  lint-shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Lint shell scripts
+        run: |
+          shellcheck -x -s bash \
+            t3_vibecoding/run.sh \
+            t3_vibecoding/lib/*.sh \
+            t3_vibecoding/services/*/run \
+            tests/*.sh
+
+  lint-dockerfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: t3_vibecoding/Dockerfile
+          config: .hadolint.yaml

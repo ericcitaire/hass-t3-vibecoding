@@ -8,7 +8,7 @@ code_server_prepare() {
   local password_yaml
 
   if ! bashio::var.has_value "${password}"; then
-    bashio::log.warning "code_server est activé mais code_server_password est vide : code-server ne démarrera pas"
+    bashio::log.warning "code_server is enabled but code_server_password is empty: code-server will not start"
     return 1
   fi
 
@@ -33,7 +33,7 @@ code_server_run() {
   credentials_env
 
   if ! bashio::config.true 'code_server'; then
-    bashio::log.info "code-server désactivé"
+    bashio::log.info "code-server disabled"
     exec sleep infinity
   fi
 
@@ -42,6 +42,6 @@ code_server_run() {
     exec sleep infinity
   fi
 
-  bashio::log.info "Démarrage de code-server sur 0.0.0.0:${CODE_SERVER_PORT}"
+  bashio::log.info "Starting code-server on 0.0.0.0:${CODE_SERVER_PORT}"
   startup_exec_as_dev code-server --config "${HOME_DIR}/.config/code-server/config.yaml"
 }

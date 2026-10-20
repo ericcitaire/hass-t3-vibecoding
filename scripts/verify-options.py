@@ -6,8 +6,7 @@ consumed in run.sh. This script verifies that those surfaces agree, that the
 container ports are consistent, and that the options retired in 0.6.0 have not
 crept back.
 
-Run locally with:
-    python3 -m pip install --user pyyaml
+Run locally in the add-on container (PyYAML is installed):
     python3 scripts/verify-options.py
 """
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2034,SC2154 # test fixtures and globals from sourced helpers
 set -euo pipefail
 
+# shellcheck source=/dev/null
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/helpers.sh"
 # shellcheck source=/dev/null
 source "${ROOT}/t3_vibecoding/lib/startup.sh"
@@ -80,7 +82,7 @@ test_apply_writes_everything() {
 
   local summary
   summary="$(cat "${TEST_TMP}/log.info")"
-  assert_contains "${summary}" "Identifiants/config appliqués"
+  assert_contains "${summary}" "Applied credentials/config"
   assert_contains "${summary}" "github"
   assert_contains "${summary}" "opencode-config"
   assert_contains "${summary}" "opencode-auth"

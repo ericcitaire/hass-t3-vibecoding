@@ -1,6 +1,10 @@
 ## Language
 
-Réponds-moi en français. Le code, les commits et la documentation du dépôt restent en anglais.
+Reply to me in French. Everything committed to this repository — code, commits, and Markdown documentation — is in English. French is reserved for interactions between agents and me.
+
+## Conventions
+
+Keep add-on release metadata coherent: `version` in `t3_vibecoding/config.yaml`, the top entry in `t3_vibecoding/CHANGELOG.md`, and the component versions quoted in `t3_vibecoding/DOCS.md` must match the `ARG` defaults in `t3_vibecoding/Dockerfile`.
 
 ## Agent skills
 
