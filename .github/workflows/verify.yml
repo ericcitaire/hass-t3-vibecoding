@@ -20,8 +20,6 @@ jobs:
         run: python scripts/verify-options.py
       - name: Test startup module
         run: bash tests/test-startup.sh
-      - name: Test code-server module
-        run: bash tests/test-code-server.sh
       - name: Test credentials module
         run: bash tests/test-credentials.sh
 
@@ -52,7 +50,6 @@ jobs:
           shellcheck -x -s bash \
             t3_vibecoding/run.sh \
             t3_vibecoding/lib/*.sh \
-            t3_vibecoding/services/*/run \
             tests/*.sh
 
   lint-dockerfile:

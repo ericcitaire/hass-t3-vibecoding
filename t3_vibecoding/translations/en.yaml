@@ -23,12 +23,5 @@ configuration:
   t3_settings_json:
     name: "T3 Code settings (JSON)"
     description: "Optional JSON merged into <T3CODE_HOME>/userdata/settings.json (enable drivers, default model)."
-  code_server:
-    name: "Enable code-server"
-    description: "Run code-server (VS Code in the browser) on port 8081 alongside T3 Code. Requires a password."
-  code_server_password:
-    name: "code-server password"
-    description: "Password for the code-server web interface. Required when code-server is enabled."
 network:
   "4096/TCP": "T3 Code web interface"
-  "8081/TCP": "code-server web editor (VS Code)"

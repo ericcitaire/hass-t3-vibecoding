@@ -1,5 +1,5 @@
 name: "T3 Code + OpenCode"
-version: "0.8.2"
+version: "0.9.0"
 slug: "t3_vibecoding"
 description: >-
   Headless vibe coding environment: T3 Code + OpenCode server, with git, node,
@@ -16,7 +16,6 @@ map:
     read_only: false
 ports:
   "4096/tcp": 4096
-  "8081/tcp": 8081
 webui: "http://[HOST]:[PORT:4096]/"
 watchdog: "tcp://[HOST]:[PORT:4096]"
 options:
@@ -28,8 +27,6 @@ options:
   opencode_config_json: ""
   opencode_auth_json: ""
   t3_settings_json: ""
-  code_server: false
-  code_server_password: ""
 schema:
   workspace: str
   git_name: "str?"
@@ -41,5 +38,3 @@ schema:
   opencode_config_json: "str?"
   opencode_auth_json: "str?"
   t3_settings_json: "str?"
-  code_server: bool
-  code_server_password: "password?"

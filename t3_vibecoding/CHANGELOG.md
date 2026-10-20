@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.9.0
+
+- **Breaking**: remove the bundled **code-server** web IDE. T3 Code 0.1.0
+  already provides an integrated terminal and an editable Files panel, so the
+  second port, password, s6 service and VS Code image were unused weight.
+- Drop the `code_server` and `code_server_password` options and the `8081`
+  container port. Existing values are ignored by the Supervisor and can be
+  reset; remove `/data/home/.config/code-server` and
+  `/data/home/.local/share/code-server` to reclaim disk space.
+- Remove the code-server download from the image, the `CODE_SERVER_VERSION`
+  build arg, its `versions.json` entry, the s6 service, `lib/code-server.sh`,
+  tests and CI steps.
+- Document the integrated terminal, the Files panel and how to re-pair a client
+  that reports "This connection cannot read host files". File and terminal
+  access are scoped at pairing time; sessions persist across add-on updates.
+
 ## 0.8.2
 
 - Install the system libraries and fonts required by T3 Code's headless preview

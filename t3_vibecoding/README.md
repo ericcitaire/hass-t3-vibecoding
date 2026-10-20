@@ -6,8 +6,8 @@ developer tooling (`git`, `node`, `npm`, `ripgrep`, `fd`, `gh`, build tools,
 automatically as a **non-root** user (`dev`).
 
 - T3 Code web UI on `http://<host>:4096/` (pairing handled by T3).
-- Optional **code-server** web editor (VS Code) on `http://<host>:8081/`,
-  enabled and password-protected from the add-on options.
+- Integrated terminal and file editor from the T3 Code UI: no separate web IDE,
+  port or password.
 - Persistent state in `/data` (survives add-on updates).
 - Default workspace: `/share/vibecoding` (HA `share` folder).
 - Automatic restart on boot (`boot: auto`).

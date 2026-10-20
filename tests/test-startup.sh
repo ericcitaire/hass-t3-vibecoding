@@ -16,7 +16,6 @@ test_load_options() {
   CONFIG_VALUES[opencode_config_json]='{"a":1}'
   CONFIG_VALUES[opencode_auth_json]='{"b":2}'
   CONFIG_VALUES[t3_settings_json]='{"c":3}'
-  CONFIG_VALUES[code_server_password]="secret"
 
   startup_load_options
 
@@ -27,7 +26,6 @@ test_load_options() {
   assert_eq "${STARTUP_OPTIONS[opencode_config_json]}" '{"a":1}'
   assert_eq "${STARTUP_OPTIONS[opencode_auth_json]}" '{"b":2}'
   assert_eq "${STARTUP_OPTIONS[t3_settings_json]}" '{"c":3}'
-  assert_eq "${STARTUP_OPTIONS[code_server_password]}" "secret"
 }
 
 test_prepare_home() {
@@ -55,7 +53,7 @@ test_run_as_dev() {
 }
 
 test_log_versions_from_build_stamp() {
-  printf '%s' '{"opencode":"1.2.3","t3":"4.5.6","codeServer":"7.8.9","addon":"0.8.1"}' > "${VERSIONS_FILE}"
+  printf '%s' '{"opencode":"1.2.3","t3":"4.5.6","addon":"0.9.0"}' > "${VERSIONS_FILE}"
   rm -f "${TEST_TMP}/log.info"
 
   startup_log_versions
@@ -64,7 +62,6 @@ test_log_versions_from_build_stamp() {
   log="$(cat "${TEST_TMP}/log.info")"
   assert_contains "${log}" "opencode 1.2.3"
   assert_contains "${log}" "t3 4.5.6"
-  assert_contains "${log}" "code-server 7.8.9"
 }
 
 run_test test_load_options

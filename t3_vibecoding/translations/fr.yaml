@@ -23,12 +23,5 @@ configuration:
   t3_settings_json:
     name: "Réglages T3 Code (JSON)"
     description: "JSON optionnel fusionné dans <T3CODE_HOME>/userdata/settings.json (activation des drivers, modèle par défaut)."
-  code_server:
-    name: "Activer code-server"
-    description: "Lance code-server (VS Code dans le navigateur) sur le port 8081 en parallèle de T3 Code. Un mot de passe est requis."
-  code_server_password:
-    name: "Mot de passe code-server"
-    description: "Mot de passe de l'interface web code-server. Requis lorsque code-server est activé."
 network:
   "4096/TCP": "Interface web T3 Code"
-  "8081/TCP": "Éditeur web code-server (VS Code)"

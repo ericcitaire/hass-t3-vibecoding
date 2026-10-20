@@ -8,8 +8,6 @@ HOME_DIR="/data/home"
 T3_HOME="/data/t3code"
 T3_PORT=4096
 T3_HOST="0.0.0.0"
-# shellcheck disable=SC2034 # consumed by lib/code-server.sh
-CODE_SERVER_PORT=8081
 VERSIONS_FILE="${VERSIONS_FILE:-/etc/t3-vibecoding/versions.json}"
 STARTUP_PATH="${STARTUP_PATH:-/usr/local/bin:/usr/bin:/bin:${HOME_DIR}/.opencode/bin}"
 
@@ -25,7 +23,6 @@ startup_load_options() {
   STARTUP_OPTIONS[opencode_config_json]="$(bashio::config 'opencode_config_json')"
   STARTUP_OPTIONS[opencode_auth_json]="$(bashio::config 'opencode_auth_json')"
   STARTUP_OPTIONS[t3_settings_json]="$(bashio::config 't3_settings_json')"
-  STARTUP_OPTIONS[code_server_password]="$(bashio::config 'code_server_password')"
 }
 
 _startup_build_dev_env() {
@@ -70,17 +67,15 @@ startup_prepare_home() {
 startup_log_versions() {
   local opencode_version="unknown"
   local t3_cli_version="unknown"
-  local code_server_version="unknown"
 
   if [ -r "${VERSIONS_FILE}" ]; then
     opencode_version="$(jq -r '.opencode // "unknown"' "${VERSIONS_FILE}")"
     t3_cli_version="$(jq -r '.t3 // "unknown"' "${VERSIONS_FILE}")"
-    code_server_version="$(jq -r '.codeServer // "unknown"' "${VERSIONS_FILE}")"
   else
     bashio::log.warning "Version stamp missing: ${VERSIONS_FILE}"
   fi
 
-  bashio::log.info "Bundled versions: opencode ${opencode_version}, t3 ${t3_cli_version}, code-server ${code_server_version}"
+  bashio::log.info "Bundled versions: opencode ${opencode_version}, t3 ${t3_cli_version}"
 }
 
 startup_exec_t3() {

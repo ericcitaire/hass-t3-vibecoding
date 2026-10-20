@@ -3,8 +3,7 @@
 
 The same option is declared in config.yaml, both translations, DOCS.md and
 consumed in run.sh. This script verifies that those surfaces agree, that the
-container ports are consistent, and that the options retired in 0.6.0 have not
-crept back.
+container ports are consistent, and that retired options have not crept back.
 
 Run locally in the add-on container (PyYAML is installed):
     python3 scripts/verify-options.py
@@ -26,7 +25,13 @@ FR = ADDON / "translations" / "fr.yaml"
 DOCS = ADDON / "DOCS.md"
 RUN = ADDON / "run.sh"
 
-RETIRED_OPTIONS = {"t3_port", "t3_host", "t3_version"}
+RETIRED_OPTIONS = {
+    "t3_port",
+    "t3_host",
+    "t3_version",
+    "code_server",
+    "code_server_password",
+}
 RETIRED_CONFIG_KEYS = {"panel_icon", "panel_title", "ports_description"}
 RETIRED_MAP_TYPES = {"config", "homeassistant_config"}
 
@@ -44,9 +49,6 @@ def main() -> int:
     fr_network = load_yaml(FR).get("network") or {}
     docs = DOCS.read_text(encoding="utf-8")
     runtime_files = [RUN, *sorted((ADDON / "lib").glob("*.sh"))]
-    services = ADDON / "services"
-    if services.exists():
-        runtime_files.extend(path for path in sorted(services.rglob("*")) if path.is_file())
     run = "\n".join(path.read_text(encoding="utf-8") for path in runtime_files)
     dockerfile = (ADDON / "Dockerfile").read_text(encoding="utf-8")
 
@@ -104,10 +106,10 @@ def main() -> int:
         for port in re.findall(r"\[PORT:(\d+)\]", value):
             check(f"{port}/TCP" in ports, f"{field} references undeclared container port {port}")
 
-    constants = dict(re.findall(r"^(T3_PORT|CODE_SERVER_PORT)=(\d+)\s*$", run, re.MULTILINE))
+    constants = dict(re.findall(r"^(T3_PORT)=(\d+)\s*$", run, re.MULTILINE))
     check(
-        set(constants) == {"T3_PORT", "CODE_SERVER_PORT"},
-        "run.sh must define numeric T3_PORT and CODE_SERVER_PORT constants",
+        set(constants) == {"T3_PORT"},
+        "run.sh must define the numeric T3_PORT constant",
     )
     for name, value in sorted(constants.items()):
         check(f"{value}/TCP" in ports, f"run.sh {name}={value} is not declared in config.yaml ports")
@@ -116,7 +118,7 @@ def main() -> int:
         'run.sh must bind T3 to 0.0.0.0 with T3_HOST="0.0.0.0"',
     )
 
-    for arg in ("OPENCODE_VERSION", "T3_VERSION", "CODE_SERVER_VERSION", "BUILD_VERSION"):
+    for arg in ("OPENCODE_VERSION", "T3_VERSION", "BUILD_VERSION"):
         check(
             re.search(rf"^ARG {arg}\b", dockerfile, re.MULTILINE) is not None,
             f"Dockerfile must declare ARG {arg}",

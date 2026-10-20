@@ -12,7 +12,6 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
 - `build-essential`, `python3` (with `pip` and PyYAML), `openssh-client`
 - `opencode-ai` 1.19.3 and `t3` 0.1.0 (pinned stable versions, installed
   globally with npm)
-- `code-server` 4.141.0 (VS Code in the browser, optional)
 - System libraries and fonts for T3's headless preview browser
   (Chromium/Playwright)
 
@@ -28,44 +27,30 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
 | `opencode_config_json` | *(empty)* | JSON → `~/.config/opencode/opencode.json`. |
 | `opencode_auth_json` | *(empty)* | JSON → `~/.local/share/opencode/auth.json`. |
 | `t3_settings_json` | *(empty)* | JSON merged into `<T3CODE_HOME>/userdata/settings.json`. |
-| `code_server` | `false` | Enables the **code-server** web editor (VS Code) on port `8081`. |
-| `code_server_password` | *(empty)* | code-server password. **Required** when `code_server` is enabled. |
 
-The **container ports** are fixed: `4096` for T3 Code and `8081` for
-code-server. To change the **host** port, use the add-on network settings in
-Home Assistant; `webui` and the watchdog follow that mapping. There is no port
-option to fill in.
+The **container port** is fixed: `4096` for T3 Code. To change the **host**
+port, use the add-on network settings in Home Assistant; `webui` and the
+watchdog follow that mapping. There is no port option to fill in.
 
-## Optional code-server web editor
+## Terminal and file editing
 
-In addition to T3 Code, the add-on can run **code-server**, a full VS Code
-instance in the browser (editor, terminal, LSP, Open VSX extensions).
+T3 Code already provides the shell and the file editor; the add-on ships no
+separate web IDE.
 
-1. Set `code_server_password` (masked option).
-2. Check `code_server`.
-3. Start / restart the add-on.
-4. Open `http://<box-IP>:8081/` and sign in with that password.
+- **Integrated terminal**: open it from the T3 Code toolbar or with
+  `Ctrl+J` (`Cmd+J` on macOS). It is a real PTY on the add-on container, running
+  as user `dev` with `HOME=/data/home` and the current project as working
+  directory. The terminal is attached to a thread, so open or create a thread
+  first.
+- **Files panel**: browse and search the project tree, open a file from the
+  panel or from a file link in the chat, and edit it in place. Saves are
+  automatic. Markdown is previewed, and images, audio, video and PDF files are
+  rendered in the same panel.
+- **CLI editors**: `vim` and `nano` are installed for edits from the terminal.
 
-Important points:
-
-- The port is **fixed** (`8081`) and separate from T3 Code (`4096`).
-  code-server is not exposed through Home Assistant ingress (sub-paths are not
-  supported): open it in a separate tab.
-- If `code_server` is enabled without a password, code-server is **not**
-  started and a warning appears in the log.
-- The password is rewritten into `~/.config/code-server/config.yaml` at every
-  start: changing it from the code-server UI is not persistent, use the add-on
-  option.
-- code-server runs as user `dev`, with the same `HOME` and workspace as T3 Code
-  (`/share/vibecoding` by default).
-- code-server runs as a supervised **s6 service**: it restarts automatically if
-  it stops, and stops cleanly with the add-on.
-- The password and port grant **full shell access**: do not expose `8081` to the
-  Internet. Stay on the LAN or use a VPN (Tailscale, etc.).
-- Settings and extensions persist in `/data/home/.local/share/code-server`;
-  configuration lives in `/data/home/.config/code-server`.
-- Extensions come from **Open VSX** (the Microsoft marketplace is not reachable
-  from code-server).
+Both surfaces are gated by the permissions of the **paired client**. The add-on
+does not add a second password or port: the T3 Code session that grants the
+terminal also grants file access when it is paired with the standard scopes.
 
 ## Provider / API key configuration
 
@@ -90,8 +75,8 @@ env_vars:
 
 Values use the `password` type (masked in the UI).
 
-`env_vars` and `GH_TOKEN` are passed to **both T3 Code and code-server**, which
-share the same runtime environment.
+`env_vars` and `GH_TOKEN` are passed to **T3 Code**, which runs the terminal and
+file operations as user `dev`.
 
 ### 2. OpenCode config (JSON)
 
@@ -155,8 +140,7 @@ configuration persists in `/data/home/.config/gh`.
 
 | Container path | Content | Persistent |
 |---|---|---|
-| `/data/home` | `dev`'s `HOME`, OpenCode/gh/code-server config, secrets | yes (`/data`) |
-| `/data/home/.local/share/code-server` | code-server settings and extensions | yes (`/data`) |
+| `/data/home` | `dev`'s `HOME`, OpenCode/gh config, secrets | yes (`/data`) |
 | `/data/t3code` | `T3CODE_HOME`: userdata, caches, worktrees, logs | yes (`/data`) |
 | `/share/vibecoding` | Project source code | yes (`share` folder) |
 
@@ -166,11 +150,12 @@ configuration persists in `/data/home/.config/gh`.
    URL.
 2. The add-on appears under the repository name.
 3. **Install**, fill in the options, **Start**.
-4. **Log** tab: copy the pairing information printed by `t3 serve`, then open
-   `http://<box-IP>:4096/` (or the configured host port) and pair.
-5. *(Optional)* Enable `code_server`, set `code_server_password`, then open
-   `http://<box-IP>:8081/`.
-6. Fine-tune in the T3 Code UI if needed (persisted in `/data`).
+4. **Log** tab: copy the pairing token printed by `t3 serve`, then open
+   `http://<box-IP>:4096/` (or the configured host port) and pair. The printed
+   `Pairing URL` points at the **container IP**, which is not reachable from
+   other LAN devices: keep the token and open the URL through the box IP
+   instead.
+5. Fine-tune in the T3 Code UI if needed (persisted in `/data`).
 
 ## Troubleshooting
 
@@ -181,18 +166,29 @@ configuration persists in `/data/home/.config/gh`.
 - **JSON ignored**: an "invalid JSON" message appears in the log; fix the pasted
   content.
 - **Port unreachable**: check that the add-on network mapping exposes container
-  port `4096` (or `8081` for code-server). The Supervisor watchdog tests
-  `tcp://host:4096`.
+  port `4096`. The Supervisor watchdog tests `tcp://host:4096`.
 - **"Option … does not exist in the schema" warning after an update**: the old
   `t3_port`, `t3_host` and `t3_version` options were removed because they were
-  not (or only partially) honoured. The Supervisor ignores them; the message is
-  harmless and disappears after resetting the add-on configuration.
-- **code-server does not start**: check that `code_server_password` is set and
-  that port `8081` is free on the host. Errors and restarts appear in the
-  add-on log.
-- **code-server password rejected**: the password is rewritten from the
-  `code_server_password` option at every start; changing it in the editor is not
-  enough.
+  not (or only partially) honoured, and `code_server` / `code_server_password`
+  were removed in 0.9.0. The Supervisor ignores them; the message is harmless
+  and disappears after resetting the add-on configuration.
+- **Files panel says "This connection cannot read host files"**: the client is
+  paired with a session that lacks the `filesystem:read` and `filesystem:write`
+  scopes. Scopes are fixed when the session is created, so re-pair the client:
+  revoke the old connection in T3 Code's connection settings (or use a private
+  browser window), then pair again with a fresh link. The startup `Pairing URL`
+  in the add-on log grants full scopes, including file access, and
+  `docker exec -it -u dev -e HOME=/data/home addon_local_t3_vibecoding t3 auth pairing create --base-dir /data/t3code --base-url http://<box-IP>:4096`
+  creates a fresh link with the standard scopes. Update a T3 desktop client to
+  the same 0.1.x release as the server before re-pairing.
+- **Old code-server data**: 0.9.0 removed code-server. Settings and extensions
+  left behind are inert; reclaim the space with
+  `rm -rf /data/home/.config/code-server /data/home/.local/share/code-server`.
+- **Shell access when T3 is down**: install the official **Terminal & SSH**
+  add-on, disable its protection mode, then run
+  `docker exec -it addon_local_t3_vibecoding bash` (or find the container with
+  `docker ps --filter name=t3_vibecoding`). This is a break-glass path, not a
+  second web terminal.
 - **`OpenCode CLI version probe timed out after 4 seconds`**: the OpenCode
   binary can take more than 4 seconds to start on some machines, while T3 Code
   enforces that timeout on `opencode --version`. The add-on installs a wrapper
@@ -214,12 +210,12 @@ configuration persists in `/data/home/.config/gh`.
 
 ## Updates
 
-`opencode-ai`, `t3` and `code-server` versions are pinned in the `Dockerfile`
-through the `OPENCODE_VERSION`, `T3_VERSION` and `CODE_SERVER_VERSION` build
-args (currently `1.19.3`, `0.1.0` and `4.141.0`). To refresh the applications:
+`opencode-ai` and `t3` versions are pinned in the `Dockerfile` through the
+`OPENCODE_VERSION` and `T3_VERSION` build args (currently `1.19.3` and `0.1.0`).
+To refresh the applications:
 
 1. look up the latest stable version on npm (`npm view opencode-ai version`,
-   `npm view t3 version`) and in the code-server GitHub releases;
+   `npm view t3 version`);
 2. update the `ARG` defaults in the `Dockerfile`;
 3. bump `version` in `config.yaml` and add a `CHANGELOG.md` entry;
 4. rebuild the add-on.

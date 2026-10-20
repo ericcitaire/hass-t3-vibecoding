@@ -27,7 +27,6 @@ list matches the one embedded in T3 Code:
 ```bash
 python3 scripts/verify-options.py
 bash tests/test-startup.sh
-bash tests/test-code-server.sh
 bash tests/test-credentials.sh
 # With a t3 binary from the installed npm package:
 python3 scripts/verify-browser-packages.py --binary /path/to/t3

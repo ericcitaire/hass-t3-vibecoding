@@ -37,11 +37,6 @@ cat > "${STUB_DIR}/t3" <<'EOF'
 printf '0.1.0\n'
 EOF
 
-cat > "${STUB_DIR}/code-server" <<'EOF'
-#!/usr/bin/env bash
-printf '4.141.0\n'
-EOF
-
 chmod +x "${STUB_DIR}"/*
 
 declare -A CONFIG_VALUES=()
