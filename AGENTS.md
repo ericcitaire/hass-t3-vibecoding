@@ -6,6 +6,13 @@ Reply to me in French. Everything committed to this repository — code, commits
 
 Keep add-on release metadata coherent: `version` in `t3_vibecoding/config.yaml`, the top entry in `t3_vibecoding/CHANGELOG.md`, and the component versions quoted in `t3_vibecoding/DOCS.md` must match the `ARG` defaults in `t3_vibecoding/Dockerfile`.
 
+## Workspaces
+
+- The root checkout (`/data/home/hass-t3-vibecoding`) stays on `main` and is only used for integration: no work branches, no feature commits. Only merges into `main` happen there.
+- Each task runs in a dedicated worktree created from `main`, never by creating a branch in the root: otherwise two threads diverge in the same checkout and the next one inherits the wrong state.
+- One branch per thread. After merging into `main`, remove the worktree and its branch.
+- Only one thread merges into `main`; the others hand their branch back. T3 records the branch at launch: switching branches in the root makes its metadata wrong.
+
 ## Agent skills
 
 ### Issue tracker
