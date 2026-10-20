@@ -34,6 +34,11 @@ _Avoid_: Files panel, editor
 One-time exchange that links a client to the T3 Code server.
 _Avoid_: Login, sign-in
 
+**Pre-built image**:
+Multi-architecture add-on image published to GHCR by CI and pulled by the
+Supervisor, instead of being built on the device.
+_Avoid_: Docker image, container
+
 **Scope**:
 Permission granted to a paired client for the lifetime of its session.
 _Avoid_: Role, permission level

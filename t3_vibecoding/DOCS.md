@@ -148,6 +148,11 @@ configuration persists in `/data/home/.config/gh`.
 
 ## Installation
 
+The add-on is published as a pre-built multi-architecture image
+(`ghcr.io/ericcitaire/hass-t3-vibecoding`, `amd64` and `aarch64`). Home Assistant
+pulls the image tagged with the add-on version; it no longer builds the image on
+the device, so installation and updates only wait for the download.
+
 1. **Settings → Add-ons → Add-on Store → ⋮ → Repositories**, add the repository
    URL.
 2. The add-on appears under the repository name.
@@ -169,6 +174,12 @@ configuration persists in `/data/home/.config/gh`.
   content.
 - **Port unreachable**: check that the add-on network mapping exposes container
   port `4096`. The Supervisor watchdog tests `tcp://host:4096`.
+- **Image pull fails (`manifest unknown`, `unauthorized`)**: the Supervisor pulls
+  `ghcr.io/ericcitaire/hass-t3-vibecoding` with the tag matching the add-on
+  `version`. Check the **Build add-on image** workflow published that version,
+  and that the GHCR package is **public** (package settings → Change
+  visibility): Home Assistant pulls it anonymously. Re-run the failed workflow
+  after fixing it; no local rebuild is involved.
 - **"Option … does not exist in the schema" warning after an update**: the old
   `t3_port`, `t3_host` and `t3_version` options were removed because they were
   not (or only partially) honoured, and `code_server` / `code_server_password`
@@ -220,7 +231,13 @@ To refresh the applications:
    `npm view t3 version`);
 2. update the `ARG` defaults in the `Dockerfile`;
 3. bump `version` in `config.yaml` and add a `CHANGELOG.md` entry;
-4. rebuild the add-on.
+4. merge to `main`.
+
+The **Build add-on image** workflow then extracts `version` from `config.yaml`,
+builds `amd64` and `aarch64` on native runners, and publishes the version and
+`latest` tags to GHCR as one multi-arch manifest. The Supervisor pulls
+`ghcr.io/ericcitaire/hass-t3-vibecoding:<version>`. A version that was already
+published is rebuilt but not overwritten, so every release needs a version bump.
 
 The versions actually bundled are written at build time into
 `/etc/t3-vibecoding/versions.json` and logged at startup. No binary is probed at
@@ -229,7 +246,7 @@ runtime.
 Changing an `ARG` value invalidates the Docker cache of the affected layers, so
 the new version is really installed (unlike a rebuild with an unchanged
 `Dockerfile`). Avoid `t3 update` inside the container: the update would be lost
-on rebuild and is less reproducible.
+on the next image build and is less reproducible.
 
 When bumping `T3_VERSION`, the browser package list (`browser-packages.txt`) is
 checked against T3's own `DEBIAN_PACKAGES` by CI. Update it if that check fails.

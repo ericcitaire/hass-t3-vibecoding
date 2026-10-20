@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.10.0
+
+- Publish the add-on as a **pre-built multi-architecture image**
+  (`ghcr.io/ericcitaire/hass-t3-vibecoding`, `amd64` and `aarch64`) and point
+  `config.yaml` at it. Installation and updates now download the image tagged
+  with the add-on version instead of building it on the Home Assistant device,
+  which removes the long install time.
+- Add `.github/workflows/build.yml`: builds both architectures on native GitHub
+  runners, publishes the version and `latest` tags to GHCR, creates the
+  multi-arch manifest and signs it with Cosign.
+- `scripts/verify-options.py` now checks that `config.yaml` names the
+  multi-arch image, without a tag or `{arch}` placeholder, and that the name
+  matches the build workflow.
+- Document the release flow, GHCR package visibility and image-pull
+  troubleshooting.
+
 ## 0.9.0
 
 - **Breaking**: remove the bundled **code-server** web IDE. T3 Code 0.1.0

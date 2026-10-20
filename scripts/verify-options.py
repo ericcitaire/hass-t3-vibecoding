@@ -24,6 +24,8 @@ EN = ADDON / "translations" / "en.yaml"
 FR = ADDON / "translations" / "fr.yaml"
 DOCS = ADDON / "DOCS.md"
 RUN = ADDON / "run.sh"
+REPOSITORY = ROOT / "repository.yaml"
+BUILD_WORKFLOW = ROOT / ".github" / "workflows" / "build.yml"
 
 RETIRED_OPTIONS = {
     "t3_port",
@@ -135,6 +137,32 @@ def main() -> int:
         "--version" not in run,
         "runtime must not probe binaries with --version; read the build stamp instead",
     )
+
+    image = str(config.get("image") or "")
+    check(image, "config.yaml must set image so the Supervisor pulls a pre-built image")
+    check(
+        "{" not in image,
+        "config.yaml image must name the multi-arch manifest, not a {arch} variant",
+    )
+    check(
+        ":" not in image.rsplit("/", 1)[-1],
+        "config.yaml image must not carry a tag; the Supervisor uses version as the tag",
+    )
+
+    repository = str(load_yaml(REPOSITORY).get("url") or "").rstrip("/")
+    owner_match = re.search(r"^https://github\.com/([^/]+)/", repository)
+    check(owner_match is not None, "repository.yaml must contain a GitHub repository URL")
+    check(BUILD_WORKFLOW.exists(), ".github/workflows/build.yml must exist")
+    build_workflow = BUILD_WORKFLOW.read_text(encoding="utf-8") if BUILD_WORKFLOW.exists() else ""
+    image_name_match = re.search(r"^\s+IMAGE_NAME:\s*(\S+)\s*$", build_workflow, re.MULTILINE)
+    check(image_name_match is not None, "build workflow must define IMAGE_NAME")
+    if owner_match and image_name_match:
+        expected_image = f"ghcr.io/{owner_match.group(1)}/{image_name_match.group(1)}"
+        check(
+            image == expected_image,
+            f"config.yaml image '{image}' does not match the build workflow "
+            f"(expected '{expected_image}')",
+        )
 
     for name in sorted(RETIRED_OPTIONS):
         check(name not in options, f"retired option '{name}' is back in config.yaml options")
