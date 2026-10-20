@@ -32,8 +32,7 @@ jobs:
       - name: Read add-on version
         id: version
         run: |
-          version="$(sed -n 's/^version: *"\(.*\)"$/\1/p' t3_vibecoding/config.yaml)"
-          test -n "$version"
+          version="$(yq -er '.version' t3_vibecoding/config.yaml)"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
       - name: Prepare build matrix
         id: matrix
