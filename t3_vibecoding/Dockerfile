@@ -9,9 +9,12 @@ ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8
 # Fonts are required for pages to render correctly.
 COPY browser-packages.txt /tmp/t3-browser-packages.txt
 
+# OpenCode uses SQLite for `opencode db` and documents clipboard helpers for
+# its TUI, including Xvfb for headless Linux.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates curl gnupg git jq ripgrep fd-find less vim nano \
+      sqlite3 xclip xsel wl-clipboard xvfb \
       build-essential python3 python3-pip python3-yaml unzip xz-utils \
       procps openssh-client \
       $(cat /tmp/t3-browser-packages.txt) \
