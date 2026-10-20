@@ -15,6 +15,9 @@
 - Document the integrated terminal, the Files panel and how to re-pair a client
   that reports "This connection cannot read host files". File and terminal
   access are scoped at pairing time; sessions persist across add-on updates.
+- Add tools OpenCode uses or documents that the image was missing: `sqlite3`
+  for the `opencode db` shell, and `xclip`, `xsel`, `wl-clipboard` and `xvfb`
+  for TUI copy/paste, including headless Linux.
 
 ## 0.8.2
 
