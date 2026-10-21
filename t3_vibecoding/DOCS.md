@@ -12,8 +12,8 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
 - OpenCode TUI clipboard helpers: `xclip`, `xsel`, `wl-clipboard`, `xvfb`
   (headless Linux)
 - `build-essential`, `python3` (with `pip` and PyYAML), `openssh-client`
-- `opencode-ai` 1.19.3 and `t3` 0.1.0 (pinned stable versions, installed
-  globally with npm)
+- `@opencode/cli` 2.1.2 (OpenCode 2) and `t3` 0.1.0 (pinned stable versions,
+  installed globally with npm)
 - System libraries and fonts for T3's headless preview browser
   (Chromium/Playwright)
 
@@ -223,11 +223,11 @@ the device, so installation and updates only wait for the download.
 
 ## Updates
 
-`opencode-ai` and `t3` versions are pinned in the `Dockerfile` through the
-`OPENCODE_VERSION` and `T3_VERSION` build args (currently `1.19.3` and `0.1.0`).
+`@opencode/cli` and `t3` versions are pinned in the `Dockerfile` through the
+`OPENCODE_VERSION` and `T3_VERSION` build args (currently `2.1.2` and `0.1.0`).
 To refresh the applications:
 
-1. look up the latest stable version on npm (`npm view opencode-ai version`,
+1. look up the latest stable version on npm (`npm view @opencode/cli version`,
    `npm view t3 version`);
 2. update the `ARG` defaults in the `Dockerfile`;
 3. bump `version` in `config.yaml` and add a `CHANGELOG.md` entry;
