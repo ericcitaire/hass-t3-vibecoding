@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.11.0
+
+- Update OpenCode from `opencode-ai` 1.19.3 to **OpenCode 2** (`@opencode/cli`
+  2.1.2). T3 Code 0.1.0 reports limited compatibility with OpenCode 1.x and
+  needs `>=2.0.18`; OpenCode 2 is published under the new `@opencode/cli`
+  package, so the image install and the version-probe wrapper path change with
+  it. Config and auth still live in `~/.config/opencode` and
+  `~/.local/share/opencode`.
+- Keep the `--version` wrapper (answers instantly from `package.json`, forwards
+  everything else to the real binary) because T3 probes the CLI with a 4 second
+  timeout.
+
 ## 0.10.0
 
 - Publish the add-on as a **pre-built multi-architecture image**

@@ -29,7 +29,7 @@ EOF
 
 cat > "${STUB_DIR}/opencode" <<'EOF'
 #!/usr/bin/env bash
-printf '1.19.3\n'
+printf '2.1.2\n'
 EOF
 
 cat > "${STUB_DIR}/t3" <<'EOF'

@@ -33,22 +33,22 @@ RUN apt-get update \
  && ln -sf "$(command -v fdfind)" /usr/local/bin/fd \
  && rm -rf /var/lib/apt/lists/*
 
-ARG OPENCODE_VERSION=1.19.3
+ARG OPENCODE_VERSION=2.1.2
 ARG T3_VERSION=0.1.0
 ARG BUILD_VERSION
 
-RUN npm install -g --omit=dev "opencode-ai@${OPENCODE_VERSION}" "t3@${T3_VERSION}"
+RUN npm install -g --omit=dev "@opencode/cli@${OPENCODE_VERSION}" "t3@${T3_VERSION}"
 
-RUN mv /usr/lib/node_modules/opencode-ai/bin/opencode.exe /usr/lib/node_modules/opencode-ai/bin/opencode.real \
+RUN mv /usr/lib/node_modules/@opencode/cli/bin/opencode.exe /usr/lib/node_modules/@opencode/cli/bin/opencode.real \
  && printf '%s\n' \
       '#!/bin/sh' \
       'if [ "$#" -eq 1 ] && [ "$1" = "--version" ]; then' \
-      '  /usr/bin/jq -r .version /usr/lib/node_modules/opencode-ai/package.json' \
+      '  /usr/bin/jq -r .version /usr/lib/node_modules/@opencode/cli/package.json' \
       '  exit 0' \
       'fi' \
-      'exec /usr/lib/node_modules/opencode-ai/bin/opencode.real "$@"' \
-      > /usr/lib/node_modules/opencode-ai/bin/opencode.exe \
- && chmod 755 /usr/lib/node_modules/opencode-ai/bin/opencode.exe /usr/lib/node_modules/opencode-ai/bin/opencode.real
+      'exec /usr/lib/node_modules/@opencode/cli/bin/opencode.real "$@"' \
+      > /usr/lib/node_modules/@opencode/cli/bin/opencode.exe \
+ && chmod 755 /usr/lib/node_modules/@opencode/cli/bin/opencode.exe /usr/lib/node_modules/@opencode/cli/bin/opencode.real
 
 RUN mkdir -p /etc/t3-vibecoding \
  && jq -n \
