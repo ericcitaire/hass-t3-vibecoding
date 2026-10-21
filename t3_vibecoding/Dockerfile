@@ -37,9 +37,8 @@ ARG OPENCODE_VERSION=2.1.2
 ARG T3_VERSION=0.1.0
 ARG BUILD_VERSION
 
-RUN npm install -g --omit=dev "@opencode/cli@${OPENCODE_VERSION}" "t3@${T3_VERSION}"
-
-RUN mv /usr/lib/node_modules/@opencode/cli/bin/opencode.exe /usr/lib/node_modules/@opencode/cli/bin/opencode.real \
+RUN npm install -g --omit=dev --no-audit --no-fund "@opencode/cli@${OPENCODE_VERSION}" "t3@${T3_VERSION}" \
+ && mv /usr/lib/node_modules/@opencode/cli/bin/opencode.exe /usr/lib/node_modules/@opencode/cli/bin/opencode.real \
  && printf '%s\n' \
       '#!/bin/sh' \
       'if [ "$#" -eq 1 ] && [ "$1" = "--version" ]; then' \
@@ -48,7 +47,10 @@ RUN mv /usr/lib/node_modules/@opencode/cli/bin/opencode.exe /usr/lib/node_module
       'fi' \
       'exec /usr/lib/node_modules/@opencode/cli/bin/opencode.real "$@"' \
       > /usr/lib/node_modules/@opencode/cli/bin/opencode.exe \
- && chmod 755 /usr/lib/node_modules/@opencode/cli/bin/opencode.exe /usr/lib/node_modules/@opencode/cli/bin/opencode.real
+ && chmod 755 /usr/lib/node_modules/@opencode/cli/bin/opencode.exe /usr/lib/node_modules/@opencode/cli/bin/opencode.real \
+ && rm -rf /usr/lib/node_modules/@opencode/cli-linux-* \
+ && npm cache clean --force \
+ && rm -rf /root/.npm
 
 RUN mkdir -p /etc/t3-vibecoding \
  && jq -n \
