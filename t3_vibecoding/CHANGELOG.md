@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.12.0
+
+- Shrink the pre-built image. The npm install, the OpenCode `--version`
+  wrapper and the cleanup now run in a single layer, dropping the npm cache
+  (`/root/.npm`), the unused OpenCode baseline platform package
+  (`@opencode/cli-linux-*-baseline`, never selected by the postinstall) and the
+  duplicate left by the wrapper's `mv`. The wrapper still answers
+  `opencode --version` from `package.json` and forwards every other argument to
+  `opencode.real`.
+
 ## 0.11.0
 
 - Update OpenCode from `opencode-ai` 1.19.3 to **OpenCode 2** (`@opencode/cli`
