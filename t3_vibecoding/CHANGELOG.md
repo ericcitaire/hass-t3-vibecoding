@@ -1,13 +1,18 @@
 # Changelog
 
+## 0.13.1
+
+- Update `@opencode/cli` from 2.1.2 to **2.1.3** (the
+  `OPENCODE_VERSION` build arg default). No configuration or compatibility
+  change expected; T3 Code keeps probing the CLI through the same `--version`
+  wrapper. The version is bumped separately from 0.13.0 because that image tag
+  was already published: the build workflow skips tags that exist, so the
+  rebuilt image was never pushed.
+
 ## 0.13.0
 
 - Add `zsh` to the image alongside `bash`, `vim` and `nano`, so users can
   switch their interactive shell without installing anything.
-- Update `@opencode/cli` from 2.1.2 to **2.1.3** (the
-  `OPENCODE_VERSION` build arg default). No configuration or compatibility
-  change expected; T3 Code keeps probing the CLI through the same `--version`
-  wrapper.
 
 ## 0.12.0
 
