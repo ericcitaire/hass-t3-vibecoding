@@ -8,7 +8,7 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
 
 - `git`, `gh` (GitHub CLI)
 - `node` 22 + `npm`
-- `ripgrep`, `fd`, `jq`, `less`, `vim`, `nano`, `sqlite3`
+- `ripgrep`, `fd`, `jq`, `less`, `vim`, `nano`, `zsh`, `sqlite3`
 - OpenCode TUI clipboard helpers: `xclip`, `xsel`, `wl-clipboard`, `xvfb`
   (headless Linux)
 - `build-essential`, `python3` (with `pip` and PyYAML), `openssh-client`

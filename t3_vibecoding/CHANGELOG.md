@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.13.0
+
+- Add `zsh` to the image alongside `bash`, `vim` and `nano`, so users can
+  switch their interactive shell without installing anything.
+
 ## 0.12.0
 
 - Shrink the pre-built image. The npm install, the OpenCode `--version`
