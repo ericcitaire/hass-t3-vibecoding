@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.14.0
+
+- Install `powerlevel10k` v1.20.0 (the `POWERLEVEL10K_VERSION` build arg
+  default) and make `zsh` the default shell of the integrated terminal, so the
+  prompt is styled without users installing anything. The theme is unpacked
+  from the pinned upstream tarball into `/usr/share/powerlevel10k` and loaded
+  from `/etc/zsh/zshrc`; loading is skipped when the shell has no TTY, because
+  T3 reads `PATH` through `zsh -ilc` at startup and the configuration wizard
+  must not run there. The wizard writes `~/.p10k.zsh` on first use: that file
+  stays a user file and is never seeded by the add-on. `SHELL=/bin/zsh` is
+  exported to `dev` (that is how T3 chooses the terminal shell), and `bash`
+  remains installed for users who prefer it.
+
 ## 0.13.1
 
 - Update `@opencode/cli` from 2.1.2 to **2.1.3** (the
