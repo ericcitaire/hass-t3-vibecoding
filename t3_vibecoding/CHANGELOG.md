@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.1
+
+- Update `@opencode/cli` from 2.1.2 to **2.1.3** (the
+  `OPENCODE_VERSION` build arg default). No configuration or compatibility
+  change expected; T3 Code keeps probing the CLI through the same `--version`
+  wrapper.
+
 ## 0.12.0
 
 - Shrink the pre-built image. The npm install, the OpenCode `--version`
