@@ -208,6 +208,11 @@ the device, so installation and updates only wait for the download.
   and that the GHCR package is **public** (package settings → Change
   visibility): Home Assistant pulls it anonymously. Re-run the failed workflow
   after fixing it; no local rebuild is involved.
+- **The Dependency sweep fails with `Resource not accessible by integration`**:
+  the repository does not let workflows create pull requests. Enable **Settings
+  → Actions → General → Workflow permissions → Allow GitHub Actions to create
+  and approve pull requests**, then re-run the workflow. The release branch is
+  pushed before that step, so a re-run reuses it.
 - **"Option … does not exist in the schema" warning after an update**: the old
   `t3_port`, `t3_host` and `t3_version` options were removed because they were
   not (or only partially) honoured, and `code_server` / `code_server_password`
@@ -251,15 +256,43 @@ the device, so installation and updates only wait for the download.
 
 ## Updates
 
-`@opencode/cli` and `t3` versions are pinned in the `Dockerfile` through the
-`OPENCODE_VERSION` and `T3_VERSION` build args (currently `2.1.3` and `0.1.0`).
-To refresh the applications:
+The add-on pins three components in the `Dockerfile`, as build args:
+`@opencode/cli` (`OPENCODE_VERSION`), `t3` (`T3_VERSION`) and `powerlevel10k`
+(`POWERLEVEL10K_VERSION`). The versions bundled in a given image are listed
+under **Bundled components** above and stamped at build time into
+`/etc/t3-vibecoding/versions.json`.
 
-1. look up the latest stable version on npm (`npm view @opencode/cli version`,
-   `npm view t3 version`);
-2. update the `ARG` defaults in the `Dockerfile`;
-3. bump `version` in `config.yaml` and add a `CHANGELOG.md` entry;
-4. merge to `main`.
+A **dependency sweep** keeps them current; you do not bump versions by hand:
+
+- **Weekly** (Monday, 06:00 UTC) it compares the pinned versions with the
+  versions published upstream: the npm `latest` dist-tag for `@opencode/cli` and
+  `t3`, and the newest semantic-version tag for `powerlevel10k`. The
+  `preview` and `nightly` channels are ignored.
+- When a version moved, it opens — or refreshes in place on the existing
+  `chore/dependency-sweep` branch — one **release PR** carrying everything in a
+  single commit: the build args, `version` in `config.yaml`, the new
+  `CHANGELOG.md` entry and the versions quoted in this file.
+- **Monthly** (1st, 06:00 UTC) it also publishes a patch release that changes no
+  component, so Debian and `apt` security fixes reach the image. It stands down
+  when a release was published in the previous seven days.
+
+Reviewing the release PR is the only manual step: merging it is the release.
+Before that, the sweep runs the whole `Verify add-on` workflow on its branch,
+including `scripts/verify-versions.py`, which fails when `config.yaml`, the top
+`CHANGELOG.md` entry, the `DOCS.md` quotes and the `Dockerfile` build args
+disagree, when the CHANGELOG stops decreasing, or when a `TODO` survives into a
+releasable entry.
+
+Run it by hand from **Actions → Dependency sweep → Run workflow**
+(`force_refresh` publishes a patch release even without an upstream change).
+Merging to `main` is not how a version is released: `version` is bumped only
+inside a release PR.
+
+> **One-time repository setting**: the sweep opens its PR with the
+> `GITHUB_TOKEN`, so **Settings → Actions → General → Workflow permissions** must
+> allow **Allow GitHub Actions to create and approve pull requests**. Without it
+> the run fails at the last step; the branch is already pushed and will be
+> reused on the next run.
 
 The **Build add-on image** workflow then extracts `version` from `config.yaml`,
 builds `amd64` and `aarch64` on native runners, and publishes the version and

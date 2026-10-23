@@ -1,0 +1,173 @@
+name: Dependency sweep
+
+# Compares the versions pinned in the image with the versions published
+# upstream and opens (or refreshes) the release PR. Merging that PR publishes a
+# new add-on version, because the Supervisor pulls the image tagged with
+# `version` from config.yaml.
+#
+# Weekly: detect upstream releases.
+# Monthly: also publish a package refresh, to pick up Debian/apt security fixes.
+# Both can be run by hand, see DOCS.md.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+    inputs:
+      force_refresh:
+        description: "Publish a patch release even when no component drifted"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: dependency-sweep
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Detect updates and prepare the release
+    runs-on: ubuntu-latest
+    outputs:
+      prepared: ${{ steps.payload.outputs.prepared }}
+      release: ${{ steps.payload.outputs.release }}
+      title: ${{ steps.payload.outputs.title }}
+      body: ${{ steps.payload.outputs.body }}
+      branch: ${{ steps.payload.outputs.branch }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The monthly guard reads when the add-on version last moved.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Sweep upstream versions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SWEEP_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+          FORCE_INPUT: ${{ github.event.inputs.force_refresh }}
+        run: |
+          set -euo pipefail
+          branch="chore/dependency-sweep"
+          args=(prepare --json)
+          force=false
+
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ] && [ "${FORCE_INPUT}" = "true" ]; then
+            force=true
+          fi
+
+          # The monthly refresh yields to an open release PR and to a release
+          # published in the previous week, so that two runs never propose two
+          # versions for the same upstream change.
+          if [ "${EVENT_NAME}" = "schedule" ] && [ "${SCHEDULE}" = "0 6 1 * *" ]; then
+            open="$(gh pr list --head "${branch}" --state open --json number --jq 'length')"
+            if [ "${open}" = "0" ]; then
+              force=true
+              args+=(--recent-release-guard-days 7)
+            else
+              echo "A release PR is already open: the monthly refresh stands down."
+            fi
+          fi
+
+          if [ "${force}" = "true" ]; then
+            args+=(--force)
+          fi
+          python3 scripts/dependency-sweep.py "${args[@]}" > "${RUNNER_TEMP}/sweep.json"
+      - name: Publish the sweep result
+        id: payload
+        run: |
+          set -euo pipefail
+          prepared="$(jq -r '.prepared' "${RUNNER_TEMP}/sweep.json")"
+          echo "prepared=${prepared}" >> "$GITHUB_OUTPUT"
+          if [ "${prepared}" != "true" ]; then
+            jq -r '.reason // "nothing to do"' "${RUNNER_TEMP}/sweep.json" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo "### Dependency sweep"
+            echo
+            echo "| Component | Pinned | Latest | Bump |"
+            echo "| --- | --- | --- | --- |"
+            jq -r '.components[] | "| \(.label) | \(.current) | \(.latest) | \(.bump) |"' "${RUNNER_TEMP}/sweep.json"
+          } >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "release=$(jq -r '.version' "${RUNNER_TEMP}/sweep.json")"
+            echo "branch=$(jq -r '.branch' "${RUNNER_TEMP}/sweep.json")"
+            echo "title=$(jq -r '.commit_message' "${RUNNER_TEMP}/sweep.json")"
+            echo "body<<SWEEP_BODY"
+            jq -r '.pr_body' "${RUNNER_TEMP}/sweep.json"
+            echo "SWEEP_BODY"
+          } >> "$GITHUB_OUTPUT"
+      - name: Commit and push the release branch
+        if: steps.payload.outputs.prepared == 'true'
+        env:
+          BRANCH: ${{ steps.payload.outputs.branch }}
+          MESSAGE: ${{ steps.payload.outputs.title }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --create "${BRANCH}"
+          git add --all
+          git commit --message "${MESSAGE}"
+          git push --force origin "${BRANCH}"
+
+  verify:
+    name: Verify the release branch
+    needs: prepare
+    if: needs.prepare.outputs.prepared == 'true'
+    # A pull request opened with GITHUB_TOKEN does not trigger workflows, so the
+    # release branch is verified here, before the PR is opened.
+    uses: ./.github/workflows/verify.yml
+    with:
+      ref: ${{ needs.prepare.outputs.branch }}
+
+  open-pr:
+    name: Open or refresh the release PR
+    needs: [prepare, verify]
+    if: always() && needs.prepare.outputs.prepared == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open or refresh the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ needs.prepare.outputs.branch }}
+          TITLE: ${{ needs.prepare.outputs.title }}
+          BODY: ${{ needs.prepare.outputs.body }}
+          RELEASE: ${{ needs.prepare.outputs.release }}
+          VERIFY: ${{ needs.verify.result }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          body_file="${RUNNER_TEMP}/pr-body.md"
+          {
+            printf '%s\n\n' "${BODY}"
+            echo "### Verification"
+            echo
+            printf '`Verify add-on` ran on `%s`: **%s**.\n' "${BRANCH}" "${VERIFY}"
+          } > "${body_file}"
+
+          # `issues: write` lets the workflow create the label on a fresh clone;
+          # the failure is ignored once it exists.
+          gh label create dependencies \
+            --description "Upstream dependency update" --color 0e8a16 \
+            >/dev/null 2>&1 || true
+
+          state="$(gh pr view "${BRANCH}" --json state --jq .state 2>/dev/null || true)"
+          if [ "${state}" = "OPEN" ]; then
+            gh pr edit "${BRANCH}" --title "${TITLE}" --body-file "${body_file}"
+          else
+            gh pr create --base main --head "${BRANCH}" \
+              --title "${TITLE}" --body-file "${body_file}" --label dependencies
+            gh pr edit "${BRANCH}" --add-assignee "${OWNER}" >/dev/null 2>&1 || true
+          fi
+          echo "Release ${RELEASE} is ready for review on \`${BRANCH}\`." >> "$GITHUB_STEP_SUMMARY"

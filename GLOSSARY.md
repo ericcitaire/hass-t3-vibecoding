@@ -42,3 +42,17 @@ _Avoid_: Docker image, container
 **Scope**:
 Permission granted to a paired client for the lifetime of its session.
 _Avoid_: Role, permission level
+
+**Add-on version**:
+The version of the packaged add-on, which is also the tag of its published
+image.
+_Avoid_: Image tag, build number
+
+**Dependency sweep**:
+Scheduled pass that compares the component versions pinned in the image with
+the versions published upstream.
+_Avoid_: Update check, version check, bump bot
+
+**Release PR**:
+Pull request whose merge publishes one add-on version.
+_Avoid_: Bump PR, update PR
