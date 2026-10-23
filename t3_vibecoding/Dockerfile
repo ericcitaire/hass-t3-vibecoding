@@ -13,7 +13,7 @@ COPY browser-packages.txt /tmp/t3-browser-packages.txt
 # its TUI, including Xvfb for headless Linux.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      ca-certificates curl gnupg git jq ripgrep fd-find less vim nano \
+      ca-certificates curl gnupg git jq ripgrep fd-find less vim nano zsh \
       sqlite3 xclip xsel wl-clipboard xvfb \
       build-essential python3 python3-pip python3-yaml unzip xz-utils \
       procps openssh-client \
