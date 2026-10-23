@@ -68,6 +68,7 @@ reset_test_paths() {
   T3_HOME="${TEST_TMP}/t3code"
   VERSIONS_FILE="${TEST_TMP}/versions.json"
   STARTUP_PATH="${STUB_DIR}:/usr/bin:/bin"
+  ZSH_PROMPT_BLOCK="${ROOT}/t3_vibecoding/zshrc-block"
 }
 
 TESTS_RUN=0

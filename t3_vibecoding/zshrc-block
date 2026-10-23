@@ -1,0 +1,16 @@
+# t3-vibecoding prompt block (managed by the add-on: re-added on start if removed).
+#
+# powerlevel10k must be sourced after completion setup, so this block lives at
+# the end of ~/.zshrc. When T3 reads PATH it runs `zsh -ilc` without a TTY: the
+# theme must stay unloaded there, otherwise powerlevel10k offers its
+# configuration wizard inside a pipe.
+if [[ -t 0 && -t 1 ]]; then
+  # Instant prompt needs the cache `p10k configure` puts at the top of
+  # ~/.zshrc. When it is missing (fresh home, hand-written .zshrc), p10k would
+  # redirect its own output and never paint the first prompt, so take the
+  # synchronous path instead.
+  if [[ -z ${__p9k_instant_prompt_active-} ]]; then
+    typeset -g POWERLEVEL9K_DISABLE_INSTANT_PROMPT=true
+  fi
+  source /usr/share/powerlevel10k/powerlevel10k.zsh-theme
+fi

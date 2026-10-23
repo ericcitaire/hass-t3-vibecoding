@@ -36,6 +36,19 @@ jobs:
       - name: Test release metadata helpers
         run: python -m unittest discover --start-directory tests --pattern "test_*.py"
 
+  first-prompt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Install zsh
+        run: sudo apt-get update && sudo apt-get install -y zsh
+      - name: Check that the first prompt is powerlevel10k's
+        run: |
+          P10K_VERSION="$(sed -n 's/^ARG POWERLEVEL10K_VERSION=//p' t3_vibecoding/Dockerfile)"
+          python3 tests/test-first-prompt.py --p10k-version "${P10K_VERSION}"
+
   browser-packages:
     runs-on: ubuntu-latest
     steps:

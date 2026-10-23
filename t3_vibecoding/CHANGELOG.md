@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.14.1
+
+- Fix the prompt of the integrated terminal: the **first** prompt was drawn by
+  the shell's previous prompt and powerlevel10k only appeared from the second
+  one. The theme was sourced from `/etc/zsh/zshrc`, which zsh reads before
+  `~/.zshrc`, so it ran before the user's `compinit`; powerlevel10k skips its
+  first paint in that case, and paints nothing at all when the instant-prompt
+  cache does not exist yet. The theme is now sourced by a short managed block
+  kept at the end of `~/.zshrc` (created with only that block when the file is
+  missing, re-added on start if removed), and the block falls back to the
+  synchronous path when the wizard's instant-prompt cache is absent. The
+  system file keeps `compinit` and the history settings. `~/.p10k.zsh` is still
+  never created or overwritten by the add-on. A CI test now drives a real PTY
+  and asserts that the first prompt is powerlevel10k's.
+
 ## 0.14.0
 
 - Install `powerlevel10k` v1.20.0 (the `POWERLEVEL10K_VERSION` build arg
