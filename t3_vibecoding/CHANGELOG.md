@@ -4,6 +4,10 @@
 
 - Add `zsh` to the image alongside `bash`, `vim` and `nano`, so users can
   switch their interactive shell without installing anything.
+- Update `@opencode/cli` from 2.1.2 to **2.1.3** (the
+  `OPENCODE_VERSION` build arg default). No configuration or compatibility
+  change expected; T3 Code keeps probing the CLI through the same `--version`
+  wrapper.
 
 ## 0.12.0
 

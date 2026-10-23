@@ -33,7 +33,7 @@ RUN apt-get update \
  && ln -sf "$(command -v fdfind)" /usr/local/bin/fd \
  && rm -rf /var/lib/apt/lists/*
 
-ARG OPENCODE_VERSION=2.1.2
+ARG OPENCODE_VERSION=2.1.3
 ARG T3_VERSION=0.1.0
 ARG BUILD_VERSION
 
