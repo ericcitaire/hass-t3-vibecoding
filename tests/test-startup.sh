@@ -50,6 +50,11 @@ test_run_as_dev() {
   # shellcheck disable=SC2016 # $HOME must expand inside the child shell
   output="$(startup_run_as_dev sh -c 'printf "%s" "$HOME"')"
   assert_eq "${output}" "${HOME_DIR}"
+
+  # T3 picks the integrated terminal's shell from $SHELL.
+  # shellcheck disable=SC2016 # $SHELL must expand inside the child shell
+  output="$(startup_run_as_dev sh -c 'printf "%s" "$SHELL"')"
+  assert_eq "${output}" "/bin/zsh"
 }
 
 test_log_versions_from_build_stamp() {

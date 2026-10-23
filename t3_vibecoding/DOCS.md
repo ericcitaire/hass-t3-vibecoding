@@ -8,7 +8,9 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
 
 - `git`, `gh` (GitHub CLI)
 - `node` 22 + `npm`
-- `ripgrep`, `fd`, `jq`, `less`, `vim`, `nano`, `zsh`, `sqlite3`
+- `ripgrep`, `fd`, `jq`, `less`, `vim`, `nano`, `sqlite3`
+- `zsh` as the default shell for `dev`, with `powerlevel10k` v1.20.0 as the
+  prompt
 - OpenCode TUI clipboard helpers: `xclip`, `xsel`, `wl-clipboard`, `xvfb`
   (headless Linux)
 - `build-essential`, `python3` (with `pip` and PyYAML), `openssh-client`
@@ -53,6 +55,28 @@ separate web IDE.
 Both surfaces are gated by the permissions of the **paired client**. The add-on
 does not add a second password or port: the T3 Code session that grants the
 terminal also grants file access when it is paired with the standard scopes.
+
+### Shell and prompt
+
+The integrated terminal runs **zsh** as user `dev`, with
+[powerlevel10k](https://github.com/romkatv/powerlevel10k) v1.20.0 as its prompt.
+
+- The first zsh session offers the powerlevel10k configuration wizard. It
+  writes `~/.p10k.zsh` (`/data/home/.p10k.zsh`), which belongs to you: the
+  add-on never creates or overwrites it. Re-run the wizard any time with
+  `p10k configure`.
+- The theme lives in `/usr/share/powerlevel10k` and is loaded from
+  `/etc/zsh/zshrc`, so add-on updates replace the theme but keep your
+  `~/.p10k.zsh`.
+- The prompt is rendered by your browser, so the glyphs come from **your**
+  machine. Install a [Nerd Font](https://www.nerdfonts.com/) locally, select it
+  in the T3 Code settings (`fontFamilyTerminal`), then run `p10k configure` so
+  the wizard can test it. Without a Nerd Font, accept the ASCII fallback the
+  wizard offers.
+- The prompt is only loaded in a real terminal. T3 also runs `zsh -ilc` without
+  a TTY to read `PATH`, and the wizard must never start there.
+- `bash` is still installed; `SHELL=/bin/zsh` only changes the default shell of
+  the integrated terminal.
 
 ## Provider / API key configuration
 
@@ -172,6 +196,10 @@ the device, so installation and updates only wait for the download.
   (`repo`). Check the log.
 - **JSON ignored**: an "invalid JSON" message appears in the log; fix the pasted
   content.
+- **Prompt glyphs show as boxes or question marks**: the browser rendering the
+  terminal has no Nerd Font. Install one on your machine, set
+  `fontFamilyTerminal` in the T3 Code settings, then run `p10k configure` again
+  so powerlevel10k re-tests the font.
 - **Port unreachable**: check that the add-on network mapping exposes container
   port `4096`. The Supervisor watchdog tests `tcp://host:4096`.
 - **Image pull fails (`manifest unknown`, `unauthorized`)**: the Supervisor pulls

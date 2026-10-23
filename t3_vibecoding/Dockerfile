@@ -35,6 +35,10 @@ RUN apt-get update \
 
 ARG OPENCODE_VERSION=2.1.3
 ARG T3_VERSION=0.1.0
+# powerlevel10k has no Debian package: pin the upstream tag and fetch the
+# tarball, which keeps the image free of a .git directory. Tag v1.20.0 points
+# at f43d8b9e0ef48326e68fd627a016f94ab1c3585e.
+ARG POWERLEVEL10K_VERSION=v1.20.0
 ARG BUILD_VERSION
 
 RUN npm install -g --omit=dev --no-audit --no-fund "@opencode/cli@${OPENCODE_VERSION}" "t3@${T3_VERSION}" \
@@ -52,6 +56,14 @@ RUN npm install -g --omit=dev --no-audit --no-fund "@opencode/cli@${OPENCODE_VER
  && npm cache clean --force \
  && rm -rf /root/.npm
 
+# Shell prompt for the integrated terminal. The theme lives outside the
+# persistent home so add-on updates replace it, while the generated
+# ~/.p10k.zsh stays a user file.
+RUN mkdir -p /usr/share/powerlevel10k \
+ && curl -fsSL "https://github.com/romkatv/powerlevel10k/archive/refs/tags/${POWERLEVEL10K_VERSION}.tar.gz" \
+      | tar -xz --strip-components=1 -C /usr/share/powerlevel10k \
+ && chmod -R a+rX /usr/share/powerlevel10k
+
 RUN mkdir -p /etc/t3-vibecoding \
  && jq -n \
       --arg opencode "${OPENCODE_VERSION}" \
@@ -62,11 +74,16 @@ RUN mkdir -p /etc/t3-vibecoding \
  && chmod 644 /etc/t3-vibecoding/versions.json
 
 RUN groupadd -g 1000 dev \
- && useradd -u 1000 -g dev -m -s /bin/bash dev
+ && useradd -u 1000 -g dev -m -s /bin/zsh dev
 
 COPY run.sh /
 COPY lib/ /usr/local/lib/t3-vibecoding/
-RUN chmod a+x /run.sh
+# The prompt block is appended to Debian's /etc/zsh/zshrc instead of replacing
+# it, so the key bindings Debian installs for zsh keep working.
+COPY zshrc /tmp/t3-vibecoding-zshrc
+RUN chmod a+x /run.sh \
+ && cat /tmp/t3-vibecoding-zshrc >> /etc/zsh/zshrc \
+ && rm -f /tmp/t3-vibecoding-zshrc
 
 LABEL \
   io.hass.version="${BUILD_VERSION}" \

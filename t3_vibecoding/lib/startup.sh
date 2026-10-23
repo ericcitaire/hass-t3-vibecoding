@@ -33,6 +33,9 @@ _startup_build_dev_env() {
     "XDG_DATA_HOME=${HOME_DIR}/.local/share"
     "XDG_CACHE_HOME=${HOME_DIR}/.cache"
     "TERM=xterm-256color"
+    # T3 opens the integrated terminal with $SHELL (and hydrates PATH through
+    # it), so this is what makes zsh with powerlevel10k the default.
+    "SHELL=/bin/zsh"
     "PATH=${STARTUP_PATH}"
   )
 }
