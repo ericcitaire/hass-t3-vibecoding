@@ -81,6 +81,9 @@ COPY lib/ /usr/local/lib/t3-vibecoding/
 # The prompt block is appended to Debian's /etc/zsh/zshrc instead of replacing
 # it, so the key bindings Debian installs for zsh keep working.
 COPY zshrc /tmp/t3-vibecoding-zshrc
+# The theme itself is sourced from ~/.zshrc by startup_prepare_shell, after the
+# user's own completion setup.
+COPY zshrc-block /usr/local/lib/t3-vibecoding/zshrc-block
 RUN chmod a+x /run.sh \
  && cat /tmp/t3-vibecoding-zshrc >> /etc/zsh/zshrc \
  && rm -f /tmp/t3-vibecoding-zshrc

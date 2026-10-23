@@ -11,6 +11,9 @@ T3_HOST="0.0.0.0"
 VERSIONS_FILE="${VERSIONS_FILE:-/etc/t3-vibecoding/versions.json}"
 STARTUP_PATH="${STARTUP_PATH:-/usr/local/bin:/usr/bin:/bin:${HOME_DIR}/.opencode/bin}"
 
+ZSH_PROMPT_BLOCK="${ZSH_PROMPT_BLOCK:-/usr/local/lib/t3-vibecoding/zshrc-block}"
+ZSH_PROMPT_MARKER="# t3-vibecoding prompt block"
+
 declare -A STARTUP_OPTIONS=()
 declare -a STARTUP_EXTRA_ENV=()
 declare -a STARTUP_DEV_ENV=()
@@ -65,6 +68,25 @@ startup_prepare_home() {
     startup_run_as_dev git config --global user.email "${STARTUP_OPTIONS[git_email]}"
   fi
   startup_run_as_dev git config --global --add safe.directory "${workspace}"
+}
+
+# powerlevel10k must be sourced from ~/.zshrc, after whatever completion setup
+# the user's own rc runs: loaded earlier (from /etc/zsh/zshrc) it never paints
+# the first prompt. The block is idempotent so restarts do not duplicate it.
+startup_prepare_shell() {
+  local zshrc="${HOME_DIR}/.zshrc"
+
+  if [ -f "${zshrc}" ] && grep -qF "${ZSH_PROMPT_MARKER}" "${zshrc}"; then
+    return 0
+  fi
+
+  bashio::log.info "Adding the powerlevel10k prompt block to ${zshrc}"
+  # A file without a trailing newline would swallow the appended block.
+  if [ -s "${zshrc}" ] && [ -n "$(tail -c 1 "${zshrc}")" ]; then
+    printf '\n' >>"${zshrc}"
+  fi
+  cat "${ZSH_PROMPT_BLOCK}" >>"${zshrc}"
+  chown "${DEV_UID}:${DEV_GID}" "${zshrc}"
 }
 
 startup_log_versions() {

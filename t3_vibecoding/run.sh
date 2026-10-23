@@ -8,6 +8,7 @@ source /usr/local/lib/t3-vibecoding/credentials.sh
 
 startup_load_options
 startup_prepare_home
+startup_prepare_shell
 credentials_env
 startup_log_versions
 credentials_apply

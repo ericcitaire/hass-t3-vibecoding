@@ -65,9 +65,18 @@ The integrated terminal runs **zsh** as user `dev`, with
   writes `~/.p10k.zsh` (`/data/home/.p10k.zsh`), which belongs to you: the
   add-on never creates or overwrites it. Re-run the wizard any time with
   `p10k configure`.
-- The theme lives in `/usr/share/powerlevel10k` and is loaded from
-  `/etc/zsh/zshrc`, so add-on updates replace the theme but keep your
-  `~/.p10k.zsh`.
+- The theme lives in `/usr/share/powerlevel10k`. It is loaded by a short block
+  the add-on keeps at the end of `~/.zshrc`, so add-on updates replace the
+  theme but keep your `~/.p10k.zsh`. The block is re-added on start if you
+  remove it; when `~/.zshrc` does not exist, it is created with only that
+  block.
+- The block must stay at the end of the file: powerlevel10k has to be sourced
+  after your completion setup (`compinit`), otherwise the *first* prompt is
+  drawn by the previous shell prompt and the theme only appears from the
+  second one.
+- Instant prompt is enabled when the cache written by the wizard is present. If
+  it is not, the add-on's block falls back to the synchronous path so the first
+  prompt is still drawn instead of being swallowed.
 - The prompt is rendered by your browser, so the glyphs come from **your**
   machine. Install a [Nerd Font](https://www.nerdfonts.com/) locally, select it
   in the T3 Code settings (`fontFamilyTerminal`), then run `p10k configure` so

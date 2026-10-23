@@ -1,16 +1,11 @@
 # Appended to /etc/zsh/zshrc by the add-on image. Keep it self-contained: the
 # rest of that file (key bindings, sudo completion path) belongs to Debian.
+#
+# The prompt theme itself is loaded from ~/.zshrc by the block the add-on
+# maintains there: sourcing it from this file would put it before the user's
+# `compinit`, and powerlevel10k then never paints the first prompt.
 
-# Only configure the prompt in a real terminal. T3 hydrates PATH by running
-# `zsh -ilc` without a TTY, and powerlevel10k offers its configuration wizard
-# whenever an interactive shell has no ~/.p10k.zsh: without this guard, every
-# server start would run the wizard inside a pipe.
 if [[ -t 0 && -t 1 ]]; then
-  # powerlevel10k is installed system-wide, so the theme is shared by every
-  # user and survives add-on updates. The wizard writes ~/.p10k.zsh on first
-  # use; this file never creates or edits it.
-  source /usr/share/powerlevel10k/powerlevel10k.zsh-theme
-
   # Debian only calls compinit on Ubuntu, so do it here to get completion.
   autoload -Uz compinit && compinit
 
