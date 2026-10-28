@@ -62,9 +62,23 @@ jobs:
         run: |
           T3_VERSION="$(sed -n 's/^ARG T3_VERSION=//p' t3_vibecoding/Dockerfile)"
           npm install --no-save --prefix "${RUNNER_TEMP}/t3" "t3@${T3_VERSION}"
+          # t3 >= 0.1.1 is a launcher: it downloads the platform binary into
+          # $T3CODE_HOME/runtime/versions/<version> instead of installing
+          # @t3code/* npm packages. Running it once fetches that binary.
+          T3CODE_HOME="${RUNNER_TEMP}/t3-home" \
+            "${RUNNER_TEMP}/t3/node_modules/.bin/t3" --version
       - name: Compare browser packages with T3
         run: |
-          T3_BINARY="$(find "${RUNNER_TEMP}/t3/node_modules/@t3code" -type f -name t3 -print -quit)"
+          T3_VERSION="$(sed -n 's/^ARG T3_VERSION=//p' t3_vibecoding/Dockerfile)"
+          # t3 >= 0.1.1 installs the binary into $T3CODE_HOME; older releases
+          # ship the platform package under @t3code/. Search both, newest first.
+          mkdir -p "${RUNNER_TEMP}/t3-home"
+          T3_BINARY="$(find "${RUNNER_TEMP}/t3-home" "${RUNNER_TEMP}/t3" \
+            -type f -name t3 -perm -u+x -print -quit)"
+          if [ ! -x "${T3_BINARY}" ]; then
+            echo "no t3 executable found for ${T3_VERSION}" >&2
+            exit 1
+          fi
           python3 scripts/verify-browser-packages.py --binary "${T3_BINARY}"
 
   lint-shell:
