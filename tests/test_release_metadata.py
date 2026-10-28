@@ -57,17 +57,21 @@ class SurfacesTest(unittest.TestCase):
 
     def test_config_must_match_the_top_changelog_entry(self):
         stale = dict(self.files)
+        current = versions.read_config_version(self.files[versions.CONFIG])
         stale[versions.CONFIG] = versions.write_config_version(
-            self.files[versions.CONFIG], "0.13.1"
+            self.files[versions.CONFIG], versions.next_version(current, "patch")
         )
         errors = versions.check_files(stale)
         self.assertTrue(any("top CHANGELOG entry" in error for error in errors))
 
     def test_docs_must_quote_the_build_arg(self):
+        component = next(c for c in versions.COMPONENTS if c.key == "t3")
+        pinned = versions.read_args(self.files[versions.DOCKERFILE])["T3_VERSION"]
         stale = dict(self.files)
-        stale[versions.DOCS] = self.files[versions.DOCS].replace(
-            "`t3` 0.1.0", "`t3` 0.0.9"
+        stale[versions.DOCS] = versions.rewrite_docs_versions(
+            self.files[versions.DOCS], component, pinned, "0.0.9"
         )
+        self.assertNotEqual(stale[versions.DOCS], self.files[versions.DOCS])
         errors = versions.check_files(stale)
         self.assertTrue(any("T3 Code quotes" in error for error in errors))
 
@@ -88,11 +92,13 @@ class SurfacesTest(unittest.TestCase):
 
     def test_docs_rewrite_updates_every_quotation(self):
         component = next(c for c in versions.COMPONENTS if c.key == "powerlevel10k")
+        previous = versions.read_args(self.files[versions.DOCKERFILE])["POWERLEVEL10K_VERSION"]
+        latest = "v" + versions.next_version(previous, "patch")
         rewritten = versions.rewrite_docs_versions(
-            self.files[versions.DOCS], component, "v1.20.0", "v1.21.0"
+            self.files[versions.DOCS], component, previous, latest
         )
-        self.assertNotIn("v1.20.0", rewritten)
-        self.assertEqual(versions.docs_versions(rewritten)["powerlevel10k"], {"v1.21.0"})
+        self.assertNotIn(previous, rewritten)
+        self.assertEqual(versions.docs_versions(rewritten)["powerlevel10k"], {latest})
 
 
 class PrepareTest(unittest.TestCase):
@@ -110,6 +116,14 @@ class PrepareTest(unittest.TestCase):
     def pinned(self, component: versions.Component) -> str:
         return versions.read_args(read(versions.DOCKERFILE, self.root))[component.arg]
 
+    def next_upstream(self, key: str, kind: str) -> str:
+        """A version above the pinned one, so drift never depends on real releases."""
+
+        component = next(c for c in versions.COMPONENTS if c.key == key)
+        previous = self.pinned(component)
+        bumped = versions.next_version(previous, kind)
+        return f"v{bumped}" if previous.startswith("v") else bumped
+
     def test_no_drift_prepares_nothing(self):
         payload = sweep.prepare(
             self.root,
@@ -125,11 +139,13 @@ class PrepareTest(unittest.TestCase):
 
     def test_patch_drift_produces_one_coherent_release(self):
         current = versions.read_config_version(read(versions.CONFIG, self.root))
+        opencode = self.next_upstream("opencode", "patch")
+        t3 = self.next_upstream("t3", "patch")
         payload = sweep.prepare(
             self.root,
             force=False,
             guard_days=None,
-            resolve=self.resolve({"opencode": "2.1.4", "t3": "0.1.2"}),
+            resolve=self.resolve({"opencode": opencode, "t3": t3}),
             dry_run=False,
         )
 
@@ -140,7 +156,7 @@ class PrepareTest(unittest.TestCase):
 
         files = versions.read_surfaces(self.root)
         self.assertEqual(versions.check_files(files), [])
-        self.assertEqual(versions.read_args(files[versions.DOCKERFILE])["T3_VERSION"], "0.1.2")
+        self.assertEqual(versions.read_args(files[versions.DOCKERFILE])["T3_VERSION"], t3)
         self.assertEqual(
             versions.read_config_version(files[versions.CONFIG]), payload["version"]
         )
@@ -148,7 +164,7 @@ class PrepareTest(unittest.TestCase):
             versions.changelog_versions(files[versions.CHANGELOG])[0], payload["version"]
         )
         self.assertEqual(
-            versions.docs_versions(files[versions.DOCS])["opencode"], {"2.1.4"}
+            versions.docs_versions(files[versions.DOCS])["opencode"], {opencode}
         )
         body = str(payload["pr_body"])
         self.assertIn("ghcr.io/ericcitaire/hass-t3-vibecoding", body)
@@ -159,7 +175,7 @@ class PrepareTest(unittest.TestCase):
             self.root,
             force=False,
             guard_days=None,
-            resolve=self.resolve({"t3": "0.2.0"}),
+            resolve=self.resolve({"t3": self.next_upstream("t3", "minor")}),
             dry_run=False,
         )
         self.assertEqual(payload["kind"], "minor")
@@ -201,7 +217,7 @@ class PrepareTest(unittest.TestCase):
             self.root,
             force=False,
             guard_days=None,
-            resolve=self.resolve({"opencode": "2.1.4"}),
+            resolve=self.resolve({"opencode": self.next_upstream("opencode", "patch")}),
             dry_run=True,
         )
         self.assertTrue(payload["prepared"])
@@ -211,7 +227,14 @@ class PrepareTest(unittest.TestCase):
 class MeasureTest(unittest.TestCase):
     def test_measure_reports_drift_per_component(self):
         dockerfile = read(versions.DOCKERFILE, ROOT)
-        rows = sweep.measure(dockerfile, lambda c: {"opencode": "2.1.4"}.get(c.key) or versions.read_args(dockerfile)[c.arg])
+        pinned = versions.read_args(dockerfile)
+        opencode = versions.next_version(pinned["OPENCODE_VERSION"], "patch")
+        rows = sweep.measure(
+            dockerfile,
+            lambda component: opencode
+            if component.key == "opencode"
+            else pinned[component.arg],
+        )
         bumps = {row["key"]: row["bump"] for row in rows}
         self.assertEqual(bumps["opencode"], "patch")
         self.assertEqual(bumps["t3"], "none")
