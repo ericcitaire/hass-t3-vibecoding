@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.0
+
+- Update `@opencode/cli` from 2.1.3 to **2.2.0** (the `OPENCODE_VERSION` build
+  arg default). Release notes:
+  https://www.npmjs.com/package/@opencode/cli/v/2.2.0
+- Update `t3` from 0.1.0 to **0.1.3** (the `T3_VERSION` build arg default).
+  Release notes: https://www.npmjs.com/package/t3/v/0.1.3
+
 ## 0.14.1
 
 - Fix the prompt of the integrated terminal: the **first** prompt was drawn by

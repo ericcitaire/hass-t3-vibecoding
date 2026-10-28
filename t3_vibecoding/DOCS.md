@@ -14,7 +14,7 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
 - OpenCode TUI clipboard helpers: `xclip`, `xsel`, `wl-clipboard`, `xvfb`
   (headless Linux)
 - `build-essential`, `python3` (with `pip` and PyYAML), `openssh-client`
-- `@opencode/cli` 2.1.3 (OpenCode 2) and `t3` 0.1.0 (pinned stable versions,
+- `@opencode/cli` 2.2.0 (OpenCode 2) and `t3` 0.1.3 (pinned stable versions,
   installed globally with npm)
 - System libraries and fonts for T3's headless preview browser
   (Chromium/Playwright)
