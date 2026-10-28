@@ -73,8 +73,14 @@ RUN mkdir -p /etc/t3-vibecoding \
       > /etc/t3-vibecoding/versions.json \
  && chmod 644 /etc/t3-vibecoding/versions.json
 
+# The npm and node installs above run as root and leave root-owned files in
+# /tmp. Those ship inside the image, and the add-on only ever runs as dev, so
+# clear them: /tmp/opencode, the scratch directory T3 Code points agents at,
+# would otherwise be an empty directory the agent cannot write to.
 RUN groupadd -g 1000 dev \
- && useradd -u 1000 -g dev -m -s /bin/zsh dev
+ && useradd -u 1000 -g dev -m -s /bin/zsh dev \
+ && rm -rf /tmp/opencode /tmp/node-compile-cache /tmp/.bun-* \
+ && install -d -o dev -g dev -m 0755 /tmp/opencode
 
 COPY run.sh /
 COPY lib/ /usr/local/lib/t3-vibecoding/

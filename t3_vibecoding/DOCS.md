@@ -178,6 +178,7 @@ configuration persists in `/data/home/.config/gh`.
 | `/data/home` | `dev`'s `HOME`, OpenCode/gh config, secrets | yes (`/data`) |
 | `/data/t3code` | `T3CODE_HOME`: userdata, caches, worktrees, logs | yes (`/data`) |
 | `/share/vibecoding` | Project source code | yes (`share` folder) |
+| `/tmp/opencode` | Scratch directory T3 Code points agents at, owned by `dev` | no (container) |
 
 ## Installation
 
