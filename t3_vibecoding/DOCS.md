@@ -144,7 +144,7 @@ set `t3_settings_json`. This JSON is **recursively merged** into
 `<T3CODE_HOME>/userdata/settings.json`: your keys win, and the others (settings
 made in the UI) are preserved.
 
-Example: enable the OpenCode driver and use DeepSeek by default.
+Example: enable the OpenCode driver and start new threads on a free model.
 
 ```json
 {
@@ -153,7 +153,7 @@ Example: enable the OpenCode driver and use DeepSeek by default.
   },
   "textGenerationModelSelection": {
     "instanceId": "opencode",
-    "model": "deepseek/deepseek-chat"
+    "model": "opencode/deepseek-v4.1-flash-free"
   }
 }
 ```
@@ -161,6 +161,13 @@ Example: enable the OpenCode driver and use DeepSeek by default.
 Drivers available under `providers`: `opencode`, `codex`, `claudeAgent`,
 `cursor`, `grok`, `antigravity` — each with an `enabled` field (default
 `false`).
+
+The add-on does not route between models: there is no gateway in the image and
+no automatic failover. When a free model is rate-limited, the turn fails and you
+pick another model from the T3 Code selector, for example a paid one from your
+own provider. Free models are free for a limited time and rotate; prefer the
+zero-retention ones (`deepseek-v4.1-flash-free`, `glm-5.3-flash-free`) over
+those that may use prompts for training.
 
 > The file lives in `/data/t3code/userdata/settings.json` and survives add-on
 > updates.
