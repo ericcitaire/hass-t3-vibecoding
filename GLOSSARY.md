@@ -30,6 +30,11 @@ Full browser-based IDE served by the add-on itself, as code-server was; the
 add-on does not provide one.
 _Avoid_: Files panel, editor
 
+**Model gateway**:
+Service between the agent and the model providers that chooses which upstream
+serves a request; the add-on does not provide one.
+_Avoid_: Router, model router, proxy, CLIProxyAPI
+
 **Pairing**:
 One-time exchange that links a client to the T3 Code server.
 _Avoid_: Login, sign-in
