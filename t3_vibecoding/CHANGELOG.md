@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.1
+
+- Update `@opencode/cli` from 2.2.0 to **2.2.5** (the `OPENCODE_VERSION` build
+  arg default). Release notes:
+  https://www.npmjs.com/package/@opencode/cli/v/2.2.5
+- Update `t3` from 0.1.3 to **0.1.6** (the `T3_VERSION` build arg default).
+  Release notes: https://www.npmjs.com/package/t3/v/0.1.6
+
 ## 0.15.0
 
 - Update `@opencode/cli` from 2.1.3 to **2.2.0** (the `OPENCODE_VERSION` build
