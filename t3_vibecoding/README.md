@@ -2,7 +2,8 @@
 
 Local Home Assistant OS add-on for **headless vibe coding**: it bundles the
 developer tooling (`git`, `node`, `npm`, `ripgrep`, `fd`, `sqlite3`, `gh`,
-build tools, `python3`), installs **OpenCode** and **T3 Code**, and starts `t3 serve`
+PDF tools (`pdftotext`, PyMuPDF, Pillow), build tools, `python3`), installs
+**OpenCode** and **T3 Code**, and starts `t3 serve`
 automatically as a **non-root** user (`dev`).
 
 - T3 Code web UI on `http://<host>:4096/` (pairing handled by T3).

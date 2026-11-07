@@ -11,11 +11,17 @@ COPY browser-packages.txt /tmp/t3-browser-packages.txt
 
 # OpenCode uses SQLite for `opencode db` and documents clipboard helpers for
 # its TUI, including Xvfb for headless Linux.
+# PDF tooling for real documents: `poppler-utils` provides the fast CLI
+# extractors, `python3-pymupdf` extracts text and renders pages without the
+# pypdf timeouts on large scans, and `python3-pil` saves the rendered images.
+# They are Debian packages because the image's Python is externally managed:
+# `pip install` fails without `--break-system-packages`.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates curl gnupg git jq ripgrep fd-find less vim nano zsh \
       sqlite3 xclip xsel wl-clipboard xvfb \
       build-essential python3 python3-pip python3-yaml unzip xz-utils \
+      poppler-utils python3-pil python3-pymupdf \
       procps openssh-client \
       $(cat /tmp/t3-browser-packages.txt) \
       fontconfig fonts-liberation fonts-dejavu-core \
