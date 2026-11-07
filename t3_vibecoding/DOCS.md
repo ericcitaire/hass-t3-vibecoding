@@ -14,6 +14,13 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
 - OpenCode TUI clipboard helpers: `xclip`, `xsel`, `wl-clipboard`, `xvfb`
   (headless Linux)
 - `build-essential`, `python3` (with `pip` and PyYAML), `openssh-client`
+- PDF tooling: `poppler-utils` (`pdftotext`, `pdfinfo`, `pdftoppm`,
+  `pdfimages`), `python3-pil` (Pillow) and `python3-pymupdf` (PyMuPDF). They
+  are Debian packages because the image's Python is externally managed:
+  `pip install` fails without `--break-system-packages`. PyMuPDF extracts text
+  and renders pages, including large scanned documents; Pillow saves the
+  rendered images. `qpdf`, Ghostscript and ImageMagick are intentionally not
+  installed.
 - `@opencode/cli` 2.2.5 (OpenCode 2) and `t3` 0.1.6 (pinned stable versions,
   installed globally with npm)
 - System libraries and fonts for T3's headless preview browser
@@ -265,6 +272,11 @@ the device, so installation and updates only wait for the download.
   The browser itself (`chrome-headless-shell`, ~115 MiB) is downloaded by T3 on
   first use into `/data/t3code/tools`: that first run needs network access to
   `storage.googleapis.com`, then the binary persists in `/data`.
+- **PDF tools missing** (`pdftotext: command not found`,
+  `ModuleNotFoundError: No module named 'pymupdf'`): the running image predates
+  the bundled PDF stack. Pull or rebuild the add-on instead of running
+  `pip install`: the image's Python is externally managed and pip refuses
+  without `--break-system-packages`.
 - **Headless keyring**: `@napi-rs/keyring` may not find a Secret Service; check
   the file fallback in the logs.
 - **Network security**: port `4096` (bound to `0.0.0.0` in the container) is

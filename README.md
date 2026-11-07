@@ -42,16 +42,17 @@ the add-on `version` instead of building on the device.
 
 CI verifies that options stay consistent across `config.yaml`, translations,
 `DOCS.md` and `run.sh`, that container ports agree, that the configured image
-matches the build workflow, and that the browser package list matches the one
-embedded in T3 Code:
+matches the build workflow, that the PDF tooling is still installed, and that
+the browser package list matches the one embedded in T3 Code:
 
 ```bash
 python3 scripts/verify-options.py
+python3 scripts/verify-pdf-packages.py
 bash tests/test-startup.sh
 bash tests/test-credentials.sh
 # With a t3 binary from the installed npm package:
 python3 scripts/verify-browser-packages.py --binary /path/to/t3
 ```
 
-The add-on image ships Python and PyYAML, so `verify-options.py` runs without
+The add-on image ships Python and PyYAML, so these scripts run without
 installing anything.
