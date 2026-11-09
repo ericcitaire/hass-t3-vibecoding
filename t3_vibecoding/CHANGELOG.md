@@ -2,10 +2,17 @@
 
 ## Unreleased
 
+## 0.17.0
+
 ### Added
 
 - Ship `python3-reportlab` (ReportLab) so agents can generate new PDFs, not
   just read them.
+
+### Bundled components
+
+- Update `t3` from 0.1.7 to **0.1.8** (the `T3_VERSION` build arg default).
+  Release notes: https://www.npmjs.com/package/t3/v/0.1.8
 
 ## 0.16.0
 
