@@ -24,6 +24,7 @@ REQUIRED = {
     "poppler-utils": "pdftotext, pdfinfo, pdftoppm and pdfimages",
     "python3-pil": "Pillow (PIL) for saving rendered pages",
     "python3-pymupdf": "PyMuPDF for text extraction and page rendering",
+    "python3-reportlab": "ReportLab for generating PDFs",
 }
 
 INSTALL = re.compile(r"apt-get\s+install\b(?P<args>.*?)(?:&&|\Z)", re.DOTALL)

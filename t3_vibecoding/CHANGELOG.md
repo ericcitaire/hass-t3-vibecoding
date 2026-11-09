@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- Ship `python3-reportlab` (ReportLab) so agents can generate new PDFs, not
+  just read them.
+
 ## 0.16.0
 
 ### Added
