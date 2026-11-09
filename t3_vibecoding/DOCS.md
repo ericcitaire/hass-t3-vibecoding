@@ -15,11 +15,12 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
   (headless Linux)
 - `build-essential`, `python3` (with `pip` and PyYAML), `openssh-client`
 - PDF tooling: `poppler-utils` (`pdftotext`, `pdfinfo`, `pdftoppm`,
-  `pdfimages`), `python3-pil` (Pillow) and `python3-pymupdf` (PyMuPDF). They
-  are Debian packages because the image's Python is externally managed:
-  `pip install` fails without `--break-system-packages`. PyMuPDF extracts text
-  and renders pages, including large scanned documents; Pillow saves the
-  rendered images. `qpdf`, Ghostscript and ImageMagick are intentionally not
+  `pdfimages`), `python3-pil` (Pillow), `python3-pymupdf` (PyMuPDF) and
+  `python3-reportlab` (ReportLab). They are Debian packages because the image's
+  Python is externally managed: `pip install` fails without
+  `--break-system-packages`. PyMuPDF extracts text and renders pages, including
+  large scanned documents; Pillow saves the rendered images and ReportLab
+  generates new PDFs. `qpdf`, Ghostscript and ImageMagick are intentionally not
   installed.
 - `@opencode/cli` 2.2.6 (OpenCode 2) and `t3` 0.1.7 (pinned stable versions,
   installed globally with npm)

@@ -31,7 +31,9 @@ class PdfPackagesTest(unittest.TestCase):
             " && rm -rf /var/lib/apt/lists/*\n"
         )
         packages = pdf.installed_packages(dockerfile)
-        self.assertEqual(pdf.missing_packages(packages), ["python3-pymupdf"])
+        self.assertEqual(
+            pdf.missing_packages(packages), ["python3-pymupdf", "python3-reportlab"]
+        )
 
     def test_continuation_lines_and_other_layers_are_parsed(self):
         dockerfile = (
@@ -40,7 +42,7 @@ class PdfPackagesTest(unittest.TestCase):
             " && npm install -g t3\n"
             "RUN apt-get install -y --no-install-recommends gh\n"
             "RUN apt-get install -y --no-install-recommends poppler-utils \\\n"
-            "      python3-pil python3-pymupdf\n"
+            "      python3-pil python3-pymupdf python3-reportlab\n"
         )
         packages = pdf.installed_packages(dockerfile)
         self.assertIn("nodejs", packages)
