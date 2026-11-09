@@ -315,7 +315,7 @@ sections: anything under `Added` or `Changed` opens a **minor** release, a
 upstream bump as before. The `changelog` CI job fails a pull request that
 touches a user-visible file without a new bullet; add the `skip-changelog`
 label when the change is internal. Documentation-, CI- and test-only pull
-requests are exempt.
+requests are exempt, and so is the release PR, which drains `## Unreleased`.
 
 Reviewing the release PR is the only manual step: merging it is the release.
 Before that, the workflow runs the whole `Verify add-on` suite on its branch,

@@ -72,8 +72,9 @@ top, with three subsections: `### Added`, `### Changed` and `### Fixed`.
   rejects a missing or malformed `## Unreleased`, unknown sections, and
   placeholders.
 - The changelog gate runs on `pull_request` only. The release branch is
-  verified through `workflow_call`, where the gate is skipped because the
-  release PR intentionally drains the section.
+  verified through `workflow_call`, where the gate is skipped; the gate also
+  exempts the `release` label and the `chore/dependency-sweep` branch, so a
+  manual push to the release PR is green even though it drains the section.
 - The build workflow needs `contents: write` on its release job, and the
   Release is created only after the multi-arch manifest succeeds, so a failed
   or partial build never announces a release. The job also requires the push to

@@ -41,7 +41,14 @@ jobs:
   changelog:
     name: Require a CHANGELOG entry
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'skip-changelog')
+    # The release PR drains `## Unreleased` by design, so it cannot add a bullet.
+    # It carries the `release` label (and the workflow force-pushes the branch),
+    # which exempts it here; `skip-changelog` opts an internal change out.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.ref != 'chore/dependency-sweep' &&
+      !contains(github.event.pull_request.labels.*.name, 'release') &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-changelog')
     steps:
       - uses: actions/checkout@v4
         with:
