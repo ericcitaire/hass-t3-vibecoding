@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Ship PDF tooling for real documents: `poppler-utils` (`pdftotext`, `pdfinfo`,
+  `pdftoppm`, `pdfimages`), `python3-pymupdf` for fast text extraction and page
+  rendering, and `python3-pil` to save rendered pages.
+  [#13](https://github.com/ericcitaire/hass-t3-vibecoding/pull/13)
+
 ## 0.15.1
 
 - Update `@opencode/cli` from 2.2.0 to **2.2.5** (the `OPENCODE_VERSION` build

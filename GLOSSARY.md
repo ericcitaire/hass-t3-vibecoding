@@ -53,10 +53,11 @@ The version of the packaged add-on, which is also the tag of its published
 image.
 _Avoid_: Image tag, build number
 
-**Dependency sweep**:
-Scheduled pass that compares the component versions pinned in the image with
-the versions published upstream.
-_Avoid_: Update check, version check, bump bot
+**Release workflow**:
+Scheduled workflow that compares the component versions pinned in the image
+with the versions published upstream, folds the CHANGELOG's `## Unreleased`
+section into a version entry, and opens the release PR.
+_Avoid_: Dependency sweep, update check, bump bot
 
 **Release PR**:
 Pull request whose merge publishes one add-on version.

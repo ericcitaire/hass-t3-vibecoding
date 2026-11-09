@@ -38,6 +38,18 @@ jobs:
       - name: Test release metadata helpers
         run: python -m unittest discover --start-directory tests --pattern "test_*.py"
 
+  changelog:
+    name: Require a CHANGELOG entry
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'skip-changelog')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The gate compares the Unreleased section with the pull request base.
+          fetch-depth: 0
+      - name: Require a CHANGELOG entry
+        run: python3 scripts/verify-changelog.py --base "${{ github.event.pull_request.base.sha }}"
+
   first-prompt:
     runs-on: ubuntu-latest
     steps:

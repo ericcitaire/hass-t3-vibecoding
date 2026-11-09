@@ -1,6 +1,6 @@
 # Run the dependency sweep from GitHub Actions instead of a dependency bot
 
-Status: accepted
+Status: accepted; amended by [ADR 0007](0007-release-notes-and-git-tags.md)
 
 The image pins three upstream projects in the `Dockerfile`
 (`OPENCODE_VERSION`, `T3_VERSION`, `POWERLEVEL10K_VERSION`) and sits on the
@@ -60,9 +60,9 @@ We added `.github/workflows/dependency-sweep.yml`, backed by
   runs.
 - The sweep needs the repository setting **Allow GitHub Actions to create and
   approve pull requests**. It fails, visibly, at the last step when disabled.
-- The CHANGELOG entry is generated as a skeleton (one bullet per bump plus
-  release links); the maintainer enriches it in the PR when a bump deserves
-  prose. A leftover `TODO` fails the metadata check.
+- The CHANGELOG entry combines the staged `## Unreleased` bullets with one
+  bullet per bump (plus release links); see ADR 0007. A leftover `TODO` fails
+  the metadata check.
 - The add-on version follows the upstream change: an upstream major or minor
   release opens an add-on minor release, an upstream patch stays a patch, and a
   package refresh is a patch.

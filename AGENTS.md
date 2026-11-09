@@ -4,7 +4,9 @@ Reply to me in French. Everything committed to this repository — code, commits
 
 ## Conventions
 
-Keep add-on release metadata coherent: `version` in `t3_vibecoding/config.yaml`, the top entry in `t3_vibecoding/CHANGELOG.md`, and the component versions quoted in `t3_vibecoding/DOCS.md` must match the `ARG` defaults in `t3_vibecoding/Dockerfile` (`scripts/verify-versions.py` checks it). A version is released by merging the dependency sweep's release PR; never bump `version` on `main` by hand.
+Keep add-on release metadata coherent: `version` in `t3_vibecoding/config.yaml`, the top entry in `t3_vibecoding/CHANGELOG.md`, and the component versions quoted in `t3_vibecoding/DOCS.md` must match the `ARG` defaults in `t3_vibecoding/Dockerfile` (`scripts/verify-versions.py` checks it). A version is released by merging the Release workflow's release PR; never bump `version` on `main` by hand.
+
+Every pull request that changes a user-visible path adds one bullet under `## Unreleased` in `t3_vibecoding/CHANGELOG.md`, grouped under `### Added`, `### Changed` or `### Fixed`. Documentation-, CI- and test-only pull requests are exempt; the `skip-changelog` label opts out of an internal change. The Release workflow folds `## Unreleased` into the new version entry, and the build workflow creates the annotated tag `v<version>` and the GitHub Release after the image is published.
 
 ## Workspaces
 
