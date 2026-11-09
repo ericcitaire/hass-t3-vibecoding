@@ -107,18 +107,24 @@ class SurfacesTest(unittest.TestCase):
 
 
     def test_unreleased_is_the_first_entry(self):
-        text = self.files[versions.CHANGELOG]
+        text = versions.replace_unreleased(
+            self.files[versions.CHANGELOG],
+            "### Added\n\n- A staged feature.",
+        )
+        top = versions.changelog_versions(text)[0]
         self.assertTrue(versions.has_unreleased(text))
         self.assertEqual(versions.unreleased_kind(text), "minor")
         self.assertLess(
-            text.index("## Unreleased"), text.index("## 0.15.1")
+            text.index("## Unreleased"), text.index(f"## {top}\n")
         )
         self.assertEqual(versions.check_unreleased(text), [])
 
     def test_missing_unreleased_is_an_error(self):
-        broken = self.files[versions.CHANGELOG].replace(
-            "## Unreleased\n", "## 0.16.0\n"
+        changelog = self.files[versions.CHANGELOG]
+        release = versions.next_version(
+            versions.changelog_versions(changelog)[0], "minor"
         )
+        broken = changelog.replace("## Unreleased\n", f"## {release}\n")
         errors = versions.check_unreleased(broken)
         self.assertTrue(any("no '## Unreleased'" in error for error in errors))
 
@@ -151,17 +157,23 @@ class SurfacesTest(unittest.TestCase):
                 self.assertEqual(versions.unreleased_kind(text), expected)
 
     def test_fold_keeps_human_sections_and_appends_components(self):
+        changelog = self.files[versions.CHANGELOG]
         text = versions.replace_unreleased(
-            self.files[versions.CHANGELOG],
+            changelog,
             "### Added\n\n- A feature.\n\n### Fixed\n\n- A fix.",
         )
-        folded = versions.fold_unreleased(text, "0.16.0", ["- Update `t3` to 0.1.7."])
-        self.assertIn("## 0.16.0", folded)
+        release = versions.next_version(
+            versions.changelog_versions(changelog)[0], "minor"
+        )
+        folded = versions.fold_unreleased(
+            text, release, ["- A bundled component."]
+        )
+        self.assertIn(f"## {release}", folded)
         self.assertIn("### Added\n\n- A feature.", folded)
         self.assertIn("### Fixed\n\n- A fix.", folded)
         self.assertIn("### Bundled components", folded)
         self.assertFalse(versions.has_unreleased(folded))
-        self.assertEqual(versions.changelog_versions(folded)[0], "0.16.0")
+        self.assertEqual(versions.changelog_versions(folded)[0], release)
         self.assertEqual(versions.check_unreleased(folded), [])
         self.assertIn("A feature.", versions.top_entry(folded))
 
