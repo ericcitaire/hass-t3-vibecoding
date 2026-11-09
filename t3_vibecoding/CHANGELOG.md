@@ -2,12 +2,22 @@
 
 ## Unreleased
 
+## 0.16.0
+
 ### Added
 
 - Ship PDF tooling for real documents: `poppler-utils` (`pdftotext`, `pdfinfo`,
   `pdftoppm`, `pdfimages`), `python3-pymupdf` for fast text extraction and page
   rendering, and `python3-pil` to save rendered pages.
   [#13](https://github.com/ericcitaire/hass-t3-vibecoding/pull/13)
+
+### Bundled components
+
+- Update `@opencode/cli` from 2.2.5 to **2.2.6** (the `OPENCODE_VERSION` build
+  arg default). Release notes:
+  https://www.npmjs.com/package/@opencode/cli/v/2.2.6
+- Update `t3` from 0.1.6 to **0.1.7** (the `T3_VERSION` build arg default).
+  Release notes: https://www.npmjs.com/package/t3/v/0.1.7
 
 ## 0.15.1
 
