@@ -30,10 +30,14 @@ the add-on `version` instead of building on the device.
 - `amd64` and `aarch64` are built on native GitHub runners and combined into
   one multi-arch manifest.
 - Images are tagged with the add-on version and `latest`, and signed with
-  Cosign.
-- Publish a release by bumping `version` in `t3_vibecoding/config.yaml` and
-  merging to `main`. An already published version is rebuilt but not
-  overwritten.
+  Cosign. After the manifest is published, the workflow creates the annotated
+  tag `v<version>` and a GitHub Release with the `CHANGELOG.md` entry.
+- A release is cut by the **Release** workflow (weekly, or manually from
+  **Actions → Release**), reviewed as a release PR, and merged. Never bump
+  `version` in `t3_vibecoding/config.yaml` on `main` by hand.
+- Every user-visible pull request adds a bullet under `## Unreleased` in
+  `t3_vibecoding/CHANGELOG.md`; the `changelog` CI job enforces it, and the
+  `skip-changelog` label opts out of internal changes.
 - The GHCR package must be **public** so Home Assistant can pull it anonymously
   (package settings → Change visibility). The first publish may create it
   private.

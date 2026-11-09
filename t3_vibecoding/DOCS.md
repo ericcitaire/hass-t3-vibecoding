@@ -232,7 +232,7 @@ the device, so installation and updates only wait for the download.
   and that the GHCR package is **public** (package settings → Change
   visibility): Home Assistant pulls it anonymously. Re-run the failed workflow
   after fixing it; no local rebuild is involved.
-- **The Dependency sweep fails with `Resource not accessible by integration`**:
+- **The Release workflow fails with `Resource not accessible by integration`**:
   the repository does not let workflows create pull requests. Enable **Settings
   → Actions → General → Workflow permissions → Allow GitHub Actions to create
   and approve pull requests**, then re-run the workflow. The release branch is
@@ -291,33 +291,47 @@ The add-on pins three components in the `Dockerfile`, as build args:
 under **Bundled components** above and stamped at build time into
 `/etc/t3-vibecoding/versions.json`.
 
-A **dependency sweep** keeps them current; you do not bump versions by hand:
+A **release workflow** keeps them current; you do not bump versions by hand:
 
 - **Weekly** (Monday, 06:00 UTC) it compares the pinned versions with the
   versions published upstream: the npm `latest` dist-tag for `@opencode/cli` and
   `t3`, and the newest semantic-version tag for `powerlevel10k`. The
-  `preview` and `nightly` channels are ignored.
-- When a version moved, it opens — or refreshes in place on the existing
-  `chore/dependency-sweep` branch — one **release PR** carrying everything in a
-  single commit: the build args, `version` in `config.yaml`, the new
-  `CHANGELOG.md` entry and the versions quoted in this file.
+  `preview` and `nightly` channels are ignored. It also reads the
+  `## Unreleased` section of `CHANGELOG.md`.
+- When a version moved or `Unreleased` has content, it opens — or refreshes in
+  place on the existing `chore/dependency-sweep` branch — one **release PR**
+  carrying everything in a single commit: the build args, `version` in
+  `config.yaml`, the new `CHANGELOG.md` entry and the versions quoted in this
+  file. The staged `Unreleased` bullets are folded into the new entry, followed
+  by the component bullets under `### Bundled components`.
 - **Monthly** (1st, 06:00 UTC) it also publishes a patch release that changes no
   component, so Debian and `apt` security fixes reach the image. It stands down
   when a release was published in the previous seven days.
 
+Every user-visible change adds a bullet under `## Unreleased` in `CHANGELOG.md`,
+grouped under `### Added`, `### Changed` or `### Fixed`. The bump follows those
+sections: anything under `Added` or `Changed` opens a **minor** release, a
+`Fixed`-only release is a **patch**, and a dependency-only release follows the
+upstream bump as before. The `changelog` CI job fails a pull request that
+touches a user-visible file without a new bullet; add the `skip-changelog`
+label when the change is internal. Documentation-, CI- and test-only pull
+requests are exempt.
+
 Reviewing the release PR is the only manual step: merging it is the release.
-Before that, the sweep runs the whole `Verify add-on` workflow on its branch,
+Before that, the workflow runs the whole `Verify add-on` suite on its branch,
 including `scripts/verify-versions.py`, which fails when `config.yaml`, the top
 `CHANGELOG.md` entry, the `DOCS.md` quotes and the `Dockerfile` build args
-disagree, when the CHANGELOG stops decreasing, or when a `TODO` survives into a
-releasable entry.
+disagree, when the CHANGELOG stops decreasing, when `Unreleased` contains an
+unknown section or a placeholder, or when a `TODO` survives into a releasable
+entry.
 
-Run it by hand from **Actions → Dependency sweep → Run workflow**
-(`force_refresh` publishes a patch release even without an upstream change).
-Merging to `main` is not how a version is released: `version` is bumped only
-inside a release PR.
+Run it by hand from **Actions → Release → Run workflow**: `release_now` cuts a
+release even when nothing moved and `Unreleased` is empty (a package refresh),
+and `kind` forces `patch` or `minor` instead of deriving it from the staged
+sections. Merging to `main` is not how a version is released: `version` is
+bumped only inside a release PR.
 
-> **One-time repository setting**: the sweep opens its PR with the
+> **One-time repository setting**: the release workflow opens its PR with the
 > `GITHUB_TOKEN`, so **Settings → Actions → General → Workflow permissions** must
 > allow **Allow GitHub Actions to create and approve pull requests**. Without it
 > the run fails at the last step; the branch is already pushed and will be
@@ -326,8 +340,12 @@ inside a release PR.
 The **Build add-on image** workflow then extracts `version` from `config.yaml`,
 builds `amd64` and `aarch64` on native runners, and publishes the version and
 `latest` tags to GHCR as one multi-arch manifest. The Supervisor pulls
-`ghcr.io/ericcitaire/hass-t3-vibecoding:<version>`. A version that was already
-published is rebuilt but not overwritten, so every release needs a version bump.
+`ghcr.io/ericcitaire/hass-t3-vibecoding:<version>`. Once the manifest is
+published and the push bumped `version`, the workflow creates the annotated tag
+`v<version>` on the release commit and a GitHub Release whose body is the
+`CHANGELOG.md` entry for that version. A version that was already published is
+rebuilt but not overwritten, so every release needs a version bump; an existing
+tag or Release is left alone.
 
 The versions actually bundled are written at build time into
 `/etc/t3-vibecoding/versions.json` and logged at startup. No binary is probed at

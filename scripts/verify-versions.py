@@ -3,9 +3,10 @@
 
 `version` in config.yaml, the top CHANGELOG.md entry, the versions quoted in
 DOCS.md and the Dockerfile build arg defaults describe the same release. The
-dependency sweep writes all four at once; this script fails the build when a
-hand edit leaves them apart, when the CHANGELOG stops decreasing, or when a
-placeholder survives into a releasable entry.
+release workflow writes all four at once; this script fails the build when a
+hand edit leaves them apart, when the CHANGELOG stops decreasing, when the
+`## Unreleased` staging section is malformed, or when a placeholder survives
+into a releasable entry.
 
 Run locally in the add-on container (python3 is installed):
     python3 scripts/verify-versions.py

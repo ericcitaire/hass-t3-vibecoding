@@ -9,6 +9,11 @@ A released add-on version appears on four surfaces that must always agree:
 * the top entry of ``t3_vibecoding/CHANGELOG.md``;
 * the component versions quoted in ``t3_vibecoding/DOCS.md``.
 
+``t3_vibecoding/CHANGELOG.md`` also carries a permanent ``## Unreleased``
+section. Authors add one bullet per user-visible change there, grouped under
+``### Added``, ``### Changed`` or ``### Fixed``; the release workflow folds that
+section into the new version entry and leaves it empty.
+
 ``scripts/dependency-sweep.py`` rewrites those surfaces and
 ``scripts/verify-versions.py`` checks them; both go through this module so that
 "coherent" has exactly one definition.
@@ -33,8 +38,15 @@ SURFACES = (DOCKERFILE, CONFIG, CHANGELOG, DOCS)
 
 _VERSION = r"v?\d+\.\d+\.\d+"
 _VERSION_LINE = re.compile(r"^version:\s*\"(?P<version>[^\"]+)\"\s*$", re.MULTILINE)
-_CHANGELOG_HEADING = re.compile(r"^## (?P<version>\d+\.\d+\.\d+)\s*$", re.MULTILINE)
+_CHANGELOG_HEADING = re.compile(
+    r"^## (?P<version>\d+\.\d+\.\d+)[ \t]*$", re.MULTILINE
+)
+_UNRELEASED_HEADING = re.compile(r"^## Unreleased[ \t]*$", re.MULTILINE)
+_SECTION_HEADING = re.compile(r"^### (?P<name>[^\n]+?)[ \t]*$", re.MULTILINE)
 _IMAGE = re.compile(r"^image:\s*\"(?P<image>[^\"]+)\"\s*$", re.MULTILINE)
+
+UNRELEASED_SECTIONS = ("Added", "Changed", "Fixed")
+BUNDLED_SECTION = "Bundled components"
 
 PLACEHOLDERS = ("TODO", "FIXME", "TBD", "XXX")
 
@@ -213,37 +225,128 @@ def changelog_versions(text: str) -> list[str]:
     return [match.group("version") for match in _CHANGELOG_HEADING.finditer(text)]
 
 
+def entry_body(text: str, version: str) -> str:
+    """Return the body of the ``## <version>`` entry, without its heading."""
+
+    headings = list(_CHANGELOG_HEADING.finditer(text))
+    for index, heading in enumerate(headings):
+        if heading.group("version") != version:
+            continue
+        start = heading.end()
+        end = headings[index + 1].start() if index + 1 < len(headings) else len(text)
+        return text[start:end]
+    raise ValueError(f"{CHANGELOG}: no '## {version}' entry found")
+
+
 def top_entry(text: str) -> str:
     """Return the body of the first CHANGELOG entry."""
 
-    headings = list(_CHANGELOG_HEADING.finditer(text))
-    if not headings:
+    releases = changelog_versions(text)
+    if not releases:
         raise ValueError(f"{CHANGELOG}: no '## <version>' entry found")
-    start = headings[0].end()
-    end = headings[1].start() if len(headings) > 1 else len(text)
+    return entry_body(text, releases[0])
+
+
+def unreleased_body(text: str) -> str:
+    """Return the body of the ``## Unreleased`` section."""
+
+    heading = _UNRELEASED_HEADING.search(text)
+    if heading is None:
+        raise ValueError(f"{CHANGELOG}: no '## Unreleased' section")
+    start = heading.end()
+    next_release = _CHANGELOG_HEADING.search(text, start)
+    end = next_release.start() if next_release else len(text)
     return text[start:end]
 
 
-def format_entry(version: str, bullets: list[str]) -> str:
-    lines = [f"## {version}", ""]
-    for bullet in bullets:
-        lines.append(
-            fill(
-                bullet,
-                width=WRAP,
-                subsequent_indent="  ",
-                break_long_words=False,
-                break_on_hyphens=False,
-            )
-        )
-    return "\n".join(lines)
+def replace_unreleased(text: str, body: str) -> str:
+    """Replace the ``## Unreleased`` body, keeping the heading in place."""
+
+    heading = _UNRELEASED_HEADING.search(text)
+    if heading is None:
+        raise ValueError(f"{CHANGELOG}: no '## Unreleased' section")
+    start = heading.end()
+    next_release = _CHANGELOG_HEADING.search(text, start)
+    end = next_release.start() if next_release else len(text)
+    cleaned = body.strip("\n")
+    replacement = f"\n\n{cleaned}\n\n" if cleaned else "\n\n"
+    return text[:start] + replacement + text[end:]
 
 
-def prepend_entry(text: str, version: str, bullets: list[str]) -> str:
-    if not text.startswith("# Changelog"):
-        raise ValueError(f"{CHANGELOG}: must start with '# Changelog'")
-    rest = text[len("# Changelog") :].lstrip("\n")
-    return f"# Changelog\n\n{format_entry(version, bullets)}\n\n{rest}"
+def unreleased_sections(body: str) -> dict[str, str]:
+    """Return the ``### <name>`` sections of the Unreleased body."""
+
+    headings = list(_SECTION_HEADING.finditer(body))
+    sections: dict[str, str] = {}
+    for index, heading in enumerate(headings):
+        start = heading.end()
+        end = headings[index + 1].start() if index + 1 < len(headings) else len(body)
+        sections[heading.group("name").strip()] = body[start:end]
+    return sections
+
+
+def unreleased_bullets(text: str) -> list[str]:
+    try:
+        body = unreleased_body(text)
+    except ValueError:
+        return []
+    return [line for line in body.splitlines() if line.startswith("- ")]
+
+
+def has_unreleased(text: str) -> bool:
+    return bool(unreleased_bullets(text))
+
+
+def unreleased_kind(text: str) -> str | None:
+    """The bump a staged Unreleased section calls for, if any."""
+
+    try:
+        sections = unreleased_sections(unreleased_body(text))
+    except ValueError:
+        return None
+    if any(sections.get(name, "").strip() for name in ("Added", "Changed")):
+        return "minor"
+    if sections.get("Fixed", "").strip():
+        return "patch"
+    return None
+
+
+def format_bullet(bullet: str) -> str:
+    return fill(
+        bullet,
+        width=WRAP,
+        subsequent_indent="  ",
+        break_long_words=False,
+        break_on_hyphens=False,
+    )
+
+
+def fold_unreleased(text: str, version: str, bullets: list[str]) -> str:
+    """Move ``## Unreleased`` into a new ``## <version>`` entry.
+
+    Human-written sections are kept as authored; the sweep's component bullets
+    go last, under ``### Bundled components``. The Unreleased section stays in
+    place, empty.
+    """
+
+    body = unreleased_body(text).strip("\n")
+    parts = [f"## {version}", ""]
+    if body:
+        parts.append(body)
+    if bullets:
+        if body:
+            parts.append("")
+        parts.append(f"### {BUNDLED_SECTION}")
+        parts.append("")
+        parts.extend(format_bullet(bullet) for bullet in bullets)
+    entry = "\n".join(parts).strip("\n")
+
+    emptied = replace_unreleased(text, "")
+    heading = _UNRELEASED_HEADING.search(emptied)
+    if heading is None:
+        raise ValueError(f"{CHANGELOG}: no '## Unreleased' section")
+    start = heading.end()
+    return emptied[:start] + f"\n\n{entry}\n\n" + emptied[start:].lstrip("\n")
 
 
 def release_bullet(component: Component, previous: str, latest: str) -> str:
@@ -267,6 +370,59 @@ def read_surfaces(root: Path) -> dict[str, str]:
     return {path: (root / path).read_text(encoding="utf-8") for path in SURFACES}
 
 
+def check_unreleased(text: str) -> list[str]:
+    """Validate the permanent ``## Unreleased`` staging section."""
+
+    errors: list[str] = []
+    if not text.startswith("# Changelog"):
+        errors.append(f"{CHANGELOG}: must start with '# Changelog'")
+
+    heading = _UNRELEASED_HEADING.search(text)
+    if heading is None:
+        return errors + [f"{CHANGELOG}: no '## Unreleased' section"]
+    first_release = _CHANGELOG_HEADING.search(text)
+    if first_release is not None and heading.start() > first_release.start():
+        errors.append(f"{CHANGELOG}: '## Unreleased' must be the first entry")
+
+    body = unreleased_body(text)
+    for placeholder in PLACEHOLDERS:
+        if placeholder in body:
+            errors.append(
+                f"{CHANGELOG}: '## Unreleased' still contains the placeholder "
+                f"{placeholder}"
+            )
+
+    sections = unreleased_sections(body)
+    for name, content in sections.items():
+        if name not in UNRELEASED_SECTIONS:
+            errors.append(
+                f"{CHANGELOG}: '### {name}' is not allowed under '## Unreleased'"
+            )
+        elif not any(line.startswith("- ") for line in content.splitlines()):
+            errors.append(
+                f"{CHANGELOG}: '### {name}' must contain at least one bullet"
+            )
+
+    in_section = False
+    for line in body.splitlines():
+        if line.startswith("### "):
+            in_section = True
+            continue
+        if line.strip() and not in_section:
+            errors.append(
+                f"{CHANGELOG}: text under '## Unreleased' must be inside an "
+                "'### Added', '### Changed' or '### Fixed' section"
+            )
+            break
+
+    if has_unreleased(text) and unreleased_kind(text) is None:
+        errors.append(
+            f"{CHANGELOG}: '## Unreleased' bullets must be under '### Added', "
+            "'### Changed' or '### Fixed'"
+        )
+    return errors
+
+
 def check_files(files: Mapping[str, str]) -> list[str]:
     """Return every incoherence between the release surfaces."""
 
@@ -276,6 +432,8 @@ def check_files(files: Mapping[str, str]) -> list[str]:
         config_version = read_config_version(files[CONFIG])
     except ValueError as error:
         return [str(error)]
+
+    errors.extend(check_unreleased(files[CHANGELOG]))
 
     releases = changelog_versions(files[CHANGELOG])
     if not releases:

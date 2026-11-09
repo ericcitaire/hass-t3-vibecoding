@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the release metadata helpers and the dependency sweep."""
+"""Tests for the release metadata helpers and the release workflow."""
 
 from __future__ import annotations
 
@@ -16,16 +16,19 @@ sys.path.insert(0, str(SCRIPTS))
 import addon_versions as versions
 
 
-def load_sweep():
-    """Import scripts/dependency-sweep.py, whose name is not importable."""
+def load_script(name: str):
+    """Import a scripts/ entry point whose file name is not importable."""
 
-    spec = util.spec_from_file_location("dependency_sweep", SCRIPTS / "dependency-sweep.py")
+    spec = util.spec_from_file_location(
+        name.replace("-", "_"), SCRIPTS / f"{name}.py"
+    )
     module = util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-sweep = load_sweep()
+sweep = load_script("dependency-sweep")
+gate = load_script("verify-changelog")
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -86,7 +89,9 @@ class SurfacesTest(unittest.TestCase):
 
     def test_changelog_must_decrease(self):
         broken = dict(self.files)
-        broken[versions.CHANGELOG] = "# Changelog\n\n## 0.14.0\n\n- x\n\n## 0.15.0\n\n- y\n"
+        broken[versions.CHANGELOG] = (
+            "# Changelog\n\n## Unreleased\n\n## 0.14.0\n\n- x\n\n## 0.15.0\n\n- y\n"
+        )
         errors = versions.check_files(broken)
         self.assertTrue(any("must decrease" in error for error in errors))
 
@@ -101,14 +106,79 @@ class SurfacesTest(unittest.TestCase):
         self.assertEqual(versions.docs_versions(rewritten)["powerlevel10k"], {latest})
 
 
+    def test_unreleased_is_the_first_entry(self):
+        text = self.files[versions.CHANGELOG]
+        self.assertTrue(versions.has_unreleased(text))
+        self.assertEqual(versions.unreleased_kind(text), "minor")
+        self.assertLess(
+            text.index("## Unreleased"), text.index("## 0.15.1")
+        )
+        self.assertEqual(versions.check_unreleased(text), [])
+
+    def test_missing_unreleased_is_an_error(self):
+        broken = self.files[versions.CHANGELOG].replace(
+            "## Unreleased\n", "## 0.16.0\n"
+        )
+        errors = versions.check_unreleased(broken)
+        self.assertTrue(any("no '## Unreleased'" in error for error in errors))
+
+    def test_unreleased_sections_are_limited(self):
+        text = versions.replace_unreleased(
+            self.files[versions.CHANGELOG],
+            "### Added\n\n- A feature.\n\n### Notes\n\n- Something else.",
+        )
+        errors = versions.check_unreleased(text)
+        self.assertTrue(any("### Notes" in error for error in errors))
+
+    def test_unreleased_placeholder_is_an_error(self):
+        text = versions.replace_unreleased(
+            self.files[versions.CHANGELOG], "### Fixed\n\n- TODO fix it."
+        )
+        errors = versions.check_unreleased(text)
+        self.assertTrue(any("TODO" in error for error in errors))
+
+    def test_unreleased_kind_follows_the_sections(self):
+        changelog = self.files[versions.CHANGELOG]
+        cases = {
+            "### Added\n\n- x.": "minor",
+            "### Changed\n\n- x.": "minor",
+            "### Fixed\n\n- x.": "patch",
+            "": None,
+        }
+        for body, expected in cases.items():
+            with self.subTest(body=body):
+                text = versions.replace_unreleased(changelog, body)
+                self.assertEqual(versions.unreleased_kind(text), expected)
+
+    def test_fold_keeps_human_sections_and_appends_components(self):
+        text = versions.replace_unreleased(
+            self.files[versions.CHANGELOG],
+            "### Added\n\n- A feature.\n\n### Fixed\n\n- A fix.",
+        )
+        folded = versions.fold_unreleased(text, "0.16.0", ["- Update `t3` to 0.1.7."])
+        self.assertIn("## 0.16.0", folded)
+        self.assertIn("### Added\n\n- A feature.", folded)
+        self.assertIn("### Fixed\n\n- A fix.", folded)
+        self.assertIn("### Bundled components", folded)
+        self.assertFalse(versions.has_unreleased(folded))
+        self.assertEqual(versions.changelog_versions(folded)[0], "0.16.0")
+        self.assertEqual(versions.check_unreleased(folded), [])
+        self.assertIn("A feature.", versions.top_entry(folded))
+
+
 class PrepareTest(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.root = Path(self.directory.name)
         shutil.copytree(ROOT / versions.ADDON_DIR, self.root / versions.ADDON_DIR)
+        self.empty_unreleased()
 
     def tearDown(self):
         self.directory.cleanup()
+
+    def empty_unreleased(self):
+        text = read(versions.CHANGELOG, self.root)
+        write(versions.CHANGELOG, versions.replace_unreleased(text, ""), self.root)
 
     def resolve(self, latest: dict[str, str]):
         return lambda component: latest.get(component.key) or self.pinned(component)
@@ -136,6 +206,73 @@ class PrepareTest(unittest.TestCase):
         self.assertEqual(
             read(versions.CONFIG, self.root), read(versions.CONFIG, ROOT)
         )
+
+    def test_unreleased_only_prepares_a_minor_release(self):
+        current = versions.read_config_version(read(versions.CONFIG, self.root))
+        text = read(versions.CHANGELOG, self.root)
+        write(
+            versions.CHANGELOG,
+            versions.replace_unreleased(text, "### Added\n\n- Ship PDF tooling."),
+            self.root,
+        )
+        payload = sweep.prepare(
+            self.root,
+            force=False,
+            guard_days=None,
+            resolve=self.resolve({}),
+            dry_run=False,
+        )
+
+        self.assertTrue(payload["prepared"])
+        self.assertEqual(payload["kind"], "minor")
+        self.assertEqual(payload["version"], versions.next_version(current, "minor"))
+        self.assertEqual(
+            payload["changed_files"], sorted([versions.CONFIG, versions.CHANGELOG])
+        )
+
+        files = versions.read_surfaces(self.root)
+        self.assertEqual(versions.check_files(files), [])
+        self.assertIn("Ship PDF tooling", versions.top_entry(files[versions.CHANGELOG]))
+        self.assertFalse(versions.has_unreleased(files[versions.CHANGELOG]))
+
+    def test_invalid_unreleased_staging_fails_before_writing(self):
+        text = read(versions.CHANGELOG, self.root)
+        write(
+            versions.CHANGELOG,
+            versions.replace_unreleased(text, "### Notes\n\n- Something."),
+            self.root,
+        )
+        with self.assertRaises(SystemExit) as caught:
+            sweep.prepare(
+                self.root,
+                force=False,
+                guard_days=None,
+                resolve=self.resolve({}),
+                dry_run=False,
+            )
+        self.assertIn("CHANGELOG staging", str(caught.exception))
+
+    def test_unreleased_and_drift_share_one_release(self):
+        text = read(versions.CHANGELOG, self.root)
+        write(
+            versions.CHANGELOG,
+            versions.replace_unreleased(text, "### Fixed\n\n- Correct a thing."),
+            self.root,
+        )
+        payload = sweep.prepare(
+            self.root,
+            force=False,
+            guard_days=None,
+            resolve=self.resolve({"opencode": self.next_upstream("opencode", "patch")}),
+            dry_run=False,
+        )
+
+        self.assertTrue(payload["prepared"])
+        self.assertEqual(payload["kind"], "patch")
+        entry = versions.top_entry(versions.read_surfaces(self.root)[versions.CHANGELOG])
+        self.assertIn("Correct a thing.", entry)
+        self.assertIn("### Bundled components", entry)
+        self.assertIn("Update `@opencode/cli`", entry)
 
     def test_patch_drift_produces_one_coherent_release(self):
         current = versions.read_config_version(read(versions.CONFIG, self.root))
@@ -181,7 +318,7 @@ class PrepareTest(unittest.TestCase):
         self.assertEqual(payload["kind"], "minor")
         self.assertTrue(str(payload["version"]).endswith(".0"))
 
-    def test_force_refresh_without_drift_keeps_the_components(self):
+    def test_force_release_without_drift_keeps_the_components(self):
         before = versions.read_args(read(versions.DOCKERFILE, self.root))
         payload = sweep.prepare(
             self.root,
@@ -240,8 +377,52 @@ class MeasureTest(unittest.TestCase):
         self.assertEqual(bumps["t3"], "none")
 
 
+class ChangelogGateTest(unittest.TestCase):
+    def test_user_visible_paths(self):
+        for path in (
+            "t3_vibecoding/Dockerfile",
+            "t3_vibecoding/run.sh",
+            "t3_vibecoding/lib/startup.sh",
+            "t3_vibecoding/services/t3/run",
+            "t3_vibecoding/config.yaml",
+            "t3_vibecoding/translations/en.yaml",
+            "t3_vibecoding/browser-packages.txt",
+            "t3_vibecoding/zshrc",
+            "t3_vibecoding/zshrc-block",
+            "t3_vibecoding/icon.png",
+        ):
+            self.assertTrue(gate.user_visible(path), path)
+        for path in (
+            "t3_vibecoding/DOCS.md",
+            "t3_vibecoding/README.md",
+            "t3_vibecoding/CHANGELOG.md",
+            "README.md",
+            "docs/adr/0007-release-notes.md",
+            "tests/test_startup.sh",
+            "scripts/verify-versions.py",
+            ".github/workflows/verify.yml",
+        ):
+            self.assertFalse(gate.user_visible(path), path)
+
+    def test_bullet_count_only_counts_unreleased_bullets(self):
+        text = (
+            "# Changelog\n\n## Unreleased\n\n### Added\n\n- one\n- two\n\n"
+            "## 0.15.1\n\n- not counted\n"
+        )
+        self.assertEqual(gate.bullet_count(text), 2)
+
+    def test_missing_unreleased_counts_as_zero(self):
+        self.assertEqual(
+            gate.bullet_count("# Changelog\n\n## 0.15.1\n\n- one\n"), 0
+        )
+
+
 def read(relative: str, root: Path) -> str:
     return (root / relative).read_text(encoding="utf-8")
+
+
+def write(relative: str, text: str, root: Path) -> None:
+    (root / relative).write_text(text, encoding="utf-8")
 
 
 if __name__ == "__main__":
