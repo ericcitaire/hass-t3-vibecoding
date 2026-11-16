@@ -22,7 +22,7 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
   large scanned documents; Pillow saves the rendered images and ReportLab
   generates new PDFs. `qpdf`, Ghostscript and ImageMagick are intentionally not
   installed.
-- `@opencode/cli` 2.2.6 (OpenCode 2) and `t3` 0.1.8 (pinned stable versions,
+- `@opencode/cli` 2.3.0 (OpenCode 2) and `t3` 0.1.9 (pinned stable versions,
   installed globally with npm)
 - System libraries and fonts for T3's headless preview browser
   (Chromium/Playwright)
