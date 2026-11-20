@@ -20,17 +20,16 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import addon_versions
+
 ROOT = Path(__file__).resolve().parent.parent
 DOCKERFILE = ROOT / "t3_vibecoding" / "Dockerfile"
 PACKAGES = ROOT / "t3_vibecoding" / "browser-packages.txt"
 
 MARKER = b"DEBIAN_PACKAGES = ["
 GROUP_LINE = re.compile(r'^\s*\[(?P<names>"[^"]+"(?:\s*,\s*"[^"]+")*)\]\s*,?\s*$')
-
-
-def t3_version(dockerfile: Path) -> str:
-    match = re.search(r"^ARG T3_VERSION=(\S+)\s*$", dockerfile.read_text(encoding="utf-8"), re.MULTILINE)
-    return match.group(1) if match else "unknown"
 
 
 def extract_groups(binary: Path) -> list[list[str]]:
@@ -68,7 +67,13 @@ def main() -> int:
     parser.add_argument("--packages", type=Path, default=PACKAGES)
     args = parser.parse_args()
 
-    version = t3_version(DOCKERFILE)
+    try:
+        version = addon_versions.read_arg(
+            DOCKERFILE.read_text(encoding="utf-8"), "T3_VERSION"
+        )
+    except ValueError as error:
+        print(error, file=sys.stderr)
+        return 1
     groups = extract_groups(args.binary)
     packages = read_packages(args.packages)
     if not groups:

@@ -53,6 +53,12 @@ The version of the packaged add-on, which is also the tag of its published
 image.
 _Avoid_: Image tag, build number
 
+**Release surface**:
+One of the four files that must agree for a release: the Dockerfile build args,
+`version` in `config.yaml`, the top `CHANGELOG.md` entry, and the component
+versions quoted in `DOCS.md`.
+_Avoid_: Release file, metadata file
+
 **Release workflow**:
 Scheduled workflow that compares the component versions pinned in the image
 with the versions published upstream, folds the CHANGELOG's `## Unreleased`
