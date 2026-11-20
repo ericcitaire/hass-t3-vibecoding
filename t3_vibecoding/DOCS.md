@@ -9,7 +9,7 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
 - `git`, `gh` (GitHub CLI)
 - `node` 22 + `npm`
 - `ripgrep`, `fd`, `jq`, `less`, `vim`, `nano`, `sqlite3`
-- `zsh` as the default shell for `dev`, with `powerlevel10k` v1.20.0 as the
+- `zsh` as the default shell for `dev`, with `powerlevel10k` v1.21.0 as the
   prompt
 - OpenCode TUI clipboard helpers: `xclip`, `xsel`, `wl-clipboard`, `xvfb`
   (headless Linux)
@@ -22,7 +22,7 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
   large scanned documents; Pillow saves the rendered images and ReportLab
   generates new PDFs. `qpdf`, Ghostscript and ImageMagick are intentionally not
   installed.
-- `@opencode/cli` 2.3.0 (OpenCode 2) and `t3` 0.1.9 (pinned stable versions,
+- `@opencode/cli` 2.3.2 (OpenCode 2) and `t3` 0.1.11 (pinned stable versions,
   installed globally with npm)
 - System libraries and fonts for T3's headless preview browser
   (Chromium/Playwright)
@@ -67,7 +67,7 @@ terminal also grants file access when it is paired with the standard scopes.
 ### Shell and prompt
 
 The integrated terminal runs **zsh** as user `dev`, with
-[powerlevel10k](https://github.com/romkatv/powerlevel10k) v1.20.0 as its prompt.
+[powerlevel10k](https://github.com/romkatv/powerlevel10k) v1.21.0 as its prompt.
 
 - The first zsh session offers the powerlevel10k configuration wizard. It
   writes `~/.p10k.zsh` (`/data/home/.p10k.zsh`), which belongs to you: the

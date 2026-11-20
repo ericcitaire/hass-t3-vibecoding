@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 0.19.0
+
+### Bundled components
+
+- Update `@opencode/cli` from 2.3.0 to **2.3.2** (the `OPENCODE_VERSION` build
+  arg default). Release notes:
+  https://www.npmjs.com/package/@opencode/cli/v/2.3.2
+- Update `t3` from 0.1.9 to **0.1.11** (the `T3_VERSION` build arg default).
+  Release notes: https://www.npmjs.com/package/t3/v/0.1.11
+- Update `romkatv/powerlevel10k` from v1.20.0 to **v1.21.0** (the
+  `POWERLEVEL10K_VERSION` build arg default). Release notes:
+  https://github.com/romkatv/powerlevel10k/compare/v1.20.0...v1.21.0
+
 ## 0.18.0
 
 ### Bundled components

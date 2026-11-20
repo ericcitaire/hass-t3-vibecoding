@@ -40,12 +40,12 @@ RUN apt-get update \
  && ln -sf "$(command -v fdfind)" /usr/local/bin/fd \
  && rm -rf /var/lib/apt/lists/*
 
-ARG OPENCODE_VERSION=2.3.0
-ARG T3_VERSION=0.1.9
+ARG OPENCODE_VERSION=2.3.2
+ARG T3_VERSION=0.1.11
 # powerlevel10k has no Debian package: pin the upstream tag and fetch the
 # tarball, which keeps the image free of a .git directory. Tag v1.20.0 points
 # at f43d8b9e0ef48326e68fd627a016f94ab1c3585e.
-ARG POWERLEVEL10K_VERSION=v1.20.0
+ARG POWERLEVEL10K_VERSION=v1.21.0
 ARG BUILD_VERSION
 
 RUN npm install -g --omit=dev --no-audit --no-fund "@opencode/cli@${OPENCODE_VERSION}" "t3@${T3_VERSION}" \
