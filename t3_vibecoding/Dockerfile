@@ -40,8 +40,8 @@ RUN apt-get update \
  && ln -sf "$(command -v fdfind)" /usr/local/bin/fd \
  && rm -rf /var/lib/apt/lists/*
 
-ARG OPENCODE_VERSION=2.2.6
-ARG T3_VERSION=0.1.8
+ARG OPENCODE_VERSION=2.3.0
+ARG T3_VERSION=0.1.9
 # powerlevel10k has no Debian package: pin the upstream tag and fetch the
 # tarball, which keeps the image free of a .git directory. Tag v1.20.0 points
 # at f43d8b9e0ef48326e68fd627a016f94ab1c3585e.

@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 0.18.0
+
+### Bundled components
+
+- Update `@opencode/cli` from 2.2.6 to **2.3.0** (the `OPENCODE_VERSION` build
+  arg default). Release notes:
+  https://www.npmjs.com/package/@opencode/cli/v/2.3.0
+- Update `t3` from 0.1.8 to **0.1.9** (the `T3_VERSION` build arg default).
+  Release notes: https://www.npmjs.com/package/t3/v/0.1.9
+
 ## 0.17.0
 
 ### Added
