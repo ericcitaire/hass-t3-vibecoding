@@ -17,6 +17,10 @@ from pathlib import Path
 
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import addon_versions
+
 ROOT = Path(__file__).resolve().parent.parent
 ADDON = ROOT / "t3_vibecoding"
 CONFIG = ADDON / "config.yaml"
@@ -120,10 +124,15 @@ def main() -> int:
         'run.sh must bind T3 to 0.0.0.0 with T3_HOST="0.0.0.0"',
     )
 
-    for arg in ("OPENCODE_VERSION", "T3_VERSION", "BUILD_VERSION"):
+    check(
+        re.search(r"^ARG BUILD_VERSION\s*$", dockerfile, re.MULTILINE) is not None,
+        "Dockerfile must declare ARG BUILD_VERSION",
+    )
+    declared_args = addon_versions.read_args(dockerfile)
+    for component in addon_versions.COMPONENTS:
         check(
-            re.search(rf"^ARG {arg}\b", dockerfile, re.MULTILINE) is not None,
-            f"Dockerfile must declare ARG {arg}",
+            component.arg in declared_args,
+            f"Dockerfile must declare ARG {component.arg}",
         )
     check(
         "versions.json" in dockerfile,

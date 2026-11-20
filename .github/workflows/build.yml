@@ -32,7 +32,7 @@ jobs:
       - name: Read add-on version
         id: version
         run: |
-          version="$(yq -er '.version' t3_vibecoding/config.yaml)"
+          version="$(python3 scripts/addon-info.py version)"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
       - name: Prepare build matrix
         id: matrix
@@ -121,11 +121,12 @@ jobs:
           fi
           # A release is a version bump: a push that leaves `version` untouched
           # rebuilds an already published image and must not create a tag.
-          if ! previous="$(git show 'HEAD^:t3_vibecoding/config.yaml' 2>/dev/null)"; then
+          previous_config="${RUNNER_TEMP}/previous-config.yaml"
+          if ! git show 'HEAD^:t3_vibecoding/config.yaml' > "${previous_config}" 2>/dev/null; then
             echo "::error::cannot read t3_vibecoding/config.yaml at HEAD^."
             exit 1
           fi
-          previous="$(printf '%s' "${previous}" | yq -er '.version')"
+          previous="$(python3 scripts/addon-info.py version --from "${previous_config}")"
           if [ "${previous}" = "${VERSION}" ]; then
             echo "release=false" >> "$GITHUB_OUTPUT"
             echo "config.yaml version is unchanged; this push is not a release."
@@ -156,7 +157,7 @@ jobs:
             git tag -a "${tag}" -m "Release ${VERSION}" "${GITHUB_SHA}"
             git push origin "${tag}"
           fi
-          image="$(yq -er '.image' t3_vibecoding/config.yaml)"
+          image="$(python3 scripts/addon-info.py image)"
           body="${RUNNER_TEMP}/release-body.md"
           {
             echo "Image: \`${image}:${VERSION}\`"

@@ -67,7 +67,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y zsh
       - name: Check that the first prompt is powerlevel10k's
         run: |
-          P10K_VERSION="$(sed -n 's/^ARG POWERLEVEL10K_VERSION=//p' t3_vibecoding/Dockerfile)"
+          P10K_VERSION="$(python3 scripts/addon-info.py arg POWERLEVEL10K_VERSION)"
           python3 tests/test-first-prompt.py --p10k-version "${P10K_VERSION}"
 
   browser-packages:
@@ -81,7 +81,7 @@ jobs:
           node-version: "22"
       - name: Install T3
         run: |
-          T3_VERSION="$(sed -n 's/^ARG T3_VERSION=//p' t3_vibecoding/Dockerfile)"
+          T3_VERSION="$(python3 scripts/addon-info.py arg T3_VERSION)"
           npm install --no-save --prefix "${RUNNER_TEMP}/t3" "t3@${T3_VERSION}"
           # t3 >= 0.1.1 is a launcher: it downloads the platform binary into
           # $T3CODE_HOME/runtime/versions/<version> instead of installing
@@ -90,7 +90,7 @@ jobs:
             "${RUNNER_TEMP}/t3/node_modules/.bin/t3" --version
       - name: Compare browser packages with T3
         run: |
-          T3_VERSION="$(sed -n 's/^ARG T3_VERSION=//p' t3_vibecoding/Dockerfile)"
+          T3_VERSION="$(python3 scripts/addon-info.py arg T3_VERSION)"
           # t3 >= 0.1.1 installs the binary into $T3CODE_HOME; older releases
           # ship the platform package under @t3code/. Search both, newest first.
           mkdir -p "${RUNNER_TEMP}/t3-home"

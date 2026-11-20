@@ -46,14 +46,6 @@ def changed_files(base: str, root: Path) -> list[str]:
     return [line for line in completed.stdout.splitlines() if line]
 
 
-def bullet_count(text: str) -> int:
-    try:
-        body = addon_versions.unreleased_body(text)
-    except ValueError:
-        return 0
-    return sum(1 for line in body.splitlines() if line.startswith("- "))
-
-
 def base_changelog(base: str, root: Path) -> str | None:
     completed = subprocess.run(
         ["git", "-C", str(root), "show", f"{base}:{addon_versions.CHANGELOG}"],
@@ -91,7 +83,9 @@ def main(argv: list[str] | None = None) -> int:
 
     head = (root / addon_versions.CHANGELOG).read_text(encoding="utf-8")
     base = base_changelog(args.base, root)
-    added = bullet_count(head) - (bullet_count(base) if base else 0)
+    added = len(addon_versions.unreleased_bullets(head)) - (
+        len(addon_versions.unreleased_bullets(base)) if base else 0
+    )
     if added <= 0:
         print(
             "This pull request changes a user-visible path but adds no bullet to",

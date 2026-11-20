@@ -155,6 +155,15 @@ def read_args(text: str) -> dict[str, str]:
     return dict(re.findall(r"^ARG ([A-Z0-9_]+)=(\S+)\s*$", text, re.MULTILINE))
 
 
+def read_arg(text: str, name: str) -> str:
+    """One build arg default; a missing arg is an error, never a blank."""
+
+    value = read_args(text).get(name)
+    if value is None:
+        raise ValueError(f"{DOCKERFILE}: ARG {name} is missing")
+    return value
+
+
 def write_arg(text: str, name: str, value: str) -> str:
     pattern = rf"^ARG {re.escape(name)}=\S+\s*$"
     rewritten, count = re.subn(

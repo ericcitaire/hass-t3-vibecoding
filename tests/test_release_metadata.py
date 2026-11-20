@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
 import shutil
 import sys
 import tempfile
@@ -29,6 +31,7 @@ def load_script(name: str):
 
 sweep = load_script("dependency-sweep")
 gate = load_script("verify-changelog")
+addon_info = load_script("addon-info")
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -389,6 +392,50 @@ class MeasureTest(unittest.TestCase):
         self.assertEqual(bumps["t3"], "none")
 
 
+class AddonInfoTest(unittest.TestCase):
+    """The shell's way into the release surfaces."""
+
+    def test_version_prints_the_addon_version(self):
+        code, out, err = run_info("version")
+        self.assertEqual(code, 0, err)
+        self.assertEqual(
+            out.strip(),
+            versions.read_config_version(read(versions.CONFIG, ROOT)),
+        )
+
+    def test_image_prints_the_published_image(self):
+        code, out, err = run_info("image")
+        self.assertEqual(code, 0, err)
+        self.assertEqual(
+            out.strip(), versions.read_image(read(versions.CONFIG, ROOT))
+        )
+
+    def test_arg_prints_the_pinned_default(self):
+        pinned = versions.read_args(read(versions.DOCKERFILE, ROOT))["T3_VERSION"]
+        code, out, err = run_info("arg", "T3_VERSION")
+        self.assertEqual(code, 0, err)
+        self.assertEqual(out.strip(), pinned)
+
+    def test_from_reads_another_surface(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "config.yaml"
+            path.write_text('version: "9.9.9"\n', encoding="utf-8")
+            code, out, err = run_info("version", "--from", str(path))
+        self.assertEqual(code, 0, err)
+        self.assertEqual(out.strip(), "9.9.9")
+
+    def test_unknown_arg_fails_with_the_module_message(self):
+        code, out, err = run_info("arg", "NOPE_VERSION")
+        self.assertEqual(code, 1)
+        self.assertEqual(out, "")
+        self.assertIn("ARG NOPE_VERSION is missing", err)
+
+    def test_unknown_command_is_a_usage_error(self):
+        code, _, err = run_info("frobnicate")
+        self.assertEqual(code, 2)
+        self.assertIn("invalid choice", err)
+
+
 class ChangelogGateTest(unittest.TestCase):
     def test_user_visible_paths(self):
         for path in (
@@ -416,16 +463,16 @@ class ChangelogGateTest(unittest.TestCase):
         ):
             self.assertFalse(gate.user_visible(path), path)
 
-    def test_bullet_count_only_counts_unreleased_bullets(self):
+    def test_unreleased_bullets_only_count_staged_bullets(self):
         text = (
             "# Changelog\n\n## Unreleased\n\n### Added\n\n- one\n- two\n\n"
             "## 0.15.1\n\n- not counted\n"
         )
-        self.assertEqual(gate.bullet_count(text), 2)
+        self.assertEqual(len(versions.unreleased_bullets(text)), 2)
 
-    def test_missing_unreleased_counts_as_zero(self):
+    def test_missing_unreleased_has_no_bullets(self):
         self.assertEqual(
-            gate.bullet_count("# Changelog\n\n## 0.15.1\n\n- one\n"), 0
+            versions.unreleased_bullets("# Changelog\n\n## 0.15.1\n\n- one\n"), []
         )
 
 
@@ -435,6 +482,18 @@ def read(relative: str, root: Path) -> str:
 
 def write(relative: str, text: str, root: Path) -> None:
     (root / relative).write_text(text, encoding="utf-8")
+
+
+def run_info(*argv: str) -> tuple[int, str, str]:
+    """Run the CLI in process, the way a shell caller would."""
+
+    out, err = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+        try:
+            code = addon_info.main(list(argv))
+        except SystemExit as exit_error:  # argparse rejects an unknown command
+            code = int(exit_error.code or 0)
+    return code, out.getvalue(), err.getvalue()
 
 
 if __name__ == "__main__":
