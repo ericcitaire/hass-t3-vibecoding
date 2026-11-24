@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Changed
+
+- Make `bash` the default shell of the integrated terminal again and drop
+  `zsh` and `powerlevel10k`. The prompt is now a short block appended to
+  `/etc/bash.bashrc` (colour, current git branch, 5000-entry history in
+  `/data/home`, `bash-completion`); no file is written to the persistent home,
+  and powerlevel10k is no longer a tracked component.
+
 ### Added
 
 - Bundle the Claude Code CLI (`@anthropic-ai/claude-code` 2.1.331) so T3's

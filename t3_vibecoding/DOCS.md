@@ -9,8 +9,9 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
 - `git`, `gh` (GitHub CLI)
 - `node` 22 + `npm`
 - `ripgrep`, `fd`, `jq`, `less`, `vim`, `nano`, `sqlite3`
-- `zsh` as the default shell for `dev`, with `powerlevel10k` v1.20.0 as the
-  prompt
+- `bash` as the default shell for `dev`, with a coloured prompt that shows the
+  current git branch, `bash-completion` for tab completion and history kept in
+  `/data/home`
 - OpenCode TUI clipboard helpers: `xclip`, `xsel`, `wl-clipboard`, `xvfb`
   (headless Linux)
 - `build-essential`, `python3` (with `pip` and PyYAML), `openssh-client`
@@ -70,34 +71,28 @@ terminal also grants file access when it is paired with the standard scopes.
 
 ### Shell and prompt
 
-The integrated terminal runs **zsh** as user `dev`, with
-[powerlevel10k](https://github.com/romkatv/powerlevel10k) v1.20.0 as its prompt.
+The integrated terminal runs **bash** as user `dev`, which is also the login
+shell recorded for that user. Nothing has to be configured: the add-on appends
+a short block to Debian's `/etc/bash.bashrc`, so a plain interactive shell gets
+a coloured `user@host:cwd` prompt with the current git branch, tab completion
+and persistent history.
 
-- The first zsh session offers the powerlevel10k configuration wizard. It
-  writes `~/.p10k.zsh` (`/data/home/.p10k.zsh`), which belongs to you: the
-  add-on never creates or overwrites it. Re-run the wizard any time with
-  `p10k configure`.
-- The theme lives in `/usr/share/powerlevel10k`. It is loaded by a short block
-  the add-on keeps at the end of `~/.zshrc`, so add-on updates replace the
-  theme but keep your `~/.p10k.zsh`. The block is re-added on start if you
-  remove it; when `~/.zshrc` does not exist, it is created with only that
-  block.
-- The block must stay at the end of the file: powerlevel10k has to be sourced
-  after your completion setup (`compinit`), otherwise the *first* prompt is
-  drawn by the previous shell prompt and the theme only appears from the
-  second one.
-- Instant prompt is enabled when the cache written by the wizard is present. If
-  it is not, the add-on's block falls back to the synchronous path so the first
-  prompt is still drawn instead of being swallowed.
-- The prompt is rendered by your browser, so the glyphs come from **your**
-  machine. Install a [Nerd Font](https://www.nerdfonts.com/) locally, select it
-  in the T3 Code settings (`fontFamilyTerminal`), then run `p10k configure` so
-  the wizard can test it. Without a Nerd Font, accept the ASCII fallback the
-  wizard offers.
-- The prompt is only loaded in a real terminal. T3 also runs `zsh -ilc` without
-  a TTY to read `PATH`, and the wizard must never start there.
-- `bash` is still installed; `SHELL=/bin/zsh` only changes the default shell of
-  the integrated terminal.
+- The prompt is a colour-only `PS1`: git's own prompt library
+  (`/usr/lib/git-core/git-sh-prompt`, shipped by the `git` package) provides
+  `__git_ps1`, and it prints nothing outside a repository. There is no theme,
+  no wizard and no font to install.
+- The block lives in the image. Add-on updates replace it, so it always matches
+  the bundled packages, and it never writes to `/data/home`. A `~/.bashrc` you
+  write yourself (`/data/home/.bashrc`) is read after `/etc/bash.bashrc` and
+  can override the prompt.
+- History is written to `/data/home/.bash_history` (5000 entries,
+  `ignoreboth`, `histappend`), so it survives add-on updates. `bash-completion`
+  is installed and loaded explicitly from the block, because Debian only loads
+  it from `/etc/profile`, which the terminal never reads.
+- T3 also runs `bash -ilc` without a TTY to read `PATH`; the block prints
+  nothing, so that capture is unaffected (T3 reads the value between markers).
+- `dash` remains `/bin/sh` and `zsh` is no longer installed. Removing the
+  `zsh` package and powerlevel10k keeps one shell to document and maintain.
 
 ## Provider / API key configuration
 
@@ -234,10 +229,6 @@ the device, so installation and updates only wait for the download.
   (`repo`). Check the log.
 - **JSON ignored**: an "invalid JSON" message appears in the log; fix the pasted
   content.
-- **Prompt glyphs show as boxes or question marks**: the browser rendering the
-  terminal has no Nerd Font. Install one on your machine, set
-  `fontFamilyTerminal` in the T3 Code settings, then run `p10k configure` again
-  so powerlevel10k re-tests the font.
 - **Port unreachable**: check that the add-on network mapping exposes container
   port `4096`. The Supervisor watchdog tests `tcp://host:4096`.
 - **Image pull fails (`manifest unknown`, `unauthorized`)**: the Supervisor pulls
@@ -299,22 +290,20 @@ the device, so installation and updates only wait for the download.
 
 ## Updates
 
-The add-on pins six components in the `Dockerfile`, as build args:
+The add-on pins five components in the `Dockerfile`, as build args:
 `@opencode/cli` (`OPENCODE_VERSION`), `t3` (`T3_VERSION`),
 `@anthropic-ai/claude-code` (`CLAUDE_CODE_VERSION`), `@openai/codex`
-(`CODEX_VERSION`), `@github/copilot` (`COPILOT_VERSION`) and `powerlevel10k`
-(`POWERLEVEL10K_VERSION`). The versions bundled in a given image are listed
-under **Bundled components** above and stamped at build time into
-`/etc/t3-vibecoding/versions.json`.
+(`CODEX_VERSION`) and `@github/copilot` (`COPILOT_VERSION`). The versions
+bundled in a given image are listed under **Bundled components** above and
+stamped at build time into `/etc/t3-vibecoding/versions.json`.
 
 A **release workflow** keeps them current; you do not bump versions by hand:
 
 - **Weekly** (Monday, 06:00 UTC) it compares the pinned versions with the
   versions published upstream: the npm `latest` dist-tag for `@opencode/cli`,
-  `t3`, `@anthropic-ai/claude-code`, `@openai/codex` and `@github/copilot`, and
-  the newest semantic-version tag for `powerlevel10k`. The `preview` and
-  `nightly` channels are ignored. It also reads the `## Unreleased` section of
-  `CHANGELOG.md`.
+  `t3`, `@anthropic-ai/claude-code`, `@openai/codex` and `@github/copilot`. The
+  `preview` and `nightly` channels are ignored. It also reads the
+  `## Unreleased` section of `CHANGELOG.md`.
 - When a version moved or `Unreleased` has content, it opens — or refreshes in
   place on the existing `chore/dependency-sweep` branch — one **release PR**
   carrying everything in a single commit: the build args, `version` in

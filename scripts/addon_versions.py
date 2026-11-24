@@ -123,19 +123,6 @@ COMPONENTS: tuple[Component, ...] = (
         docs_patterns=(rf"`@github/copilot` ({_VERSION})",),
         release_url="https://www.npmjs.com/package/{package}/v/{latest}",
     ),
-    Component(
-        key="powerlevel10k",
-        label="powerlevel10k",
-        short="powerlevel10k",
-        arg="POWERLEVEL10K_VERSION",
-        package="romkatv/powerlevel10k",
-        datasource="github-tags",
-        docs_patterns=(
-            rf"`powerlevel10k` ({_VERSION})",
-            rf"powerlevel10k\]\(https://github\.com/romkatv/powerlevel10k\) ({_VERSION})",
-        ),
-        release_url="https://github.com/{package}/compare/{previous}...{latest}",
-    ),
 )
 
 

@@ -37,7 +37,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 class VersionMathTest(unittest.TestCase):
-    def test_parse_accepts_the_powerlevel10k_prefix(self):
+    def test_parse_accepts_a_v_prefix(self):
         self.assertEqual(versions.parse_version("v1.20.0"), (1, 20, 0))
         self.assertEqual(versions.parse_version("2.1.3"), (2, 1, 3))
 
@@ -99,14 +99,14 @@ class SurfacesTest(unittest.TestCase):
         self.assertTrue(any("must decrease" in error for error in errors))
 
     def test_docs_rewrite_updates_every_quotation(self):
-        component = next(c for c in versions.COMPONENTS if c.key == "powerlevel10k")
-        previous = versions.read_args(self.files[versions.DOCKERFILE])["POWERLEVEL10K_VERSION"]
-        latest = "v" + versions.next_version(previous, "patch")
+        component = next(c for c in versions.COMPONENTS if c.key == "t3")
+        previous = versions.read_args(self.files[versions.DOCKERFILE])["T3_VERSION"]
+        latest = versions.next_version(previous, "patch")
         rewritten = versions.rewrite_docs_versions(
             self.files[versions.DOCS], component, previous, latest
         )
         self.assertNotIn(previous, rewritten)
-        self.assertEqual(versions.docs_versions(rewritten)["powerlevel10k"], {latest})
+        self.assertEqual(versions.docs_versions(rewritten)["t3"], {latest})
 
 
     def test_unreleased_is_the_first_entry(self):
@@ -446,8 +446,7 @@ class ChangelogGateTest(unittest.TestCase):
             "t3_vibecoding/config.yaml",
             "t3_vibecoding/translations/en.yaml",
             "t3_vibecoding/browser-packages.txt",
-            "t3_vibecoding/zshrc",
-            "t3_vibecoding/zshrc-block",
+            "t3_vibecoding/bashrc",
             "t3_vibecoding/icon.png",
         ):
             self.assertTrue(gate.user_visible(path), path)

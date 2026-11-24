@@ -19,7 +19,7 @@ COPY browser-packages.txt /tmp/t3-browser-packages.txt
 # `pip install` fails without `--break-system-packages`.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      ca-certificates curl gnupg git jq ripgrep fd-find less vim nano zsh \
+      ca-certificates curl gnupg git jq ripgrep fd-find less vim nano bash-completion \
       sqlite3 xclip xsel wl-clipboard xvfb \
       build-essential python3 python3-pip python3-yaml unzip xz-utils \
       poppler-utils python3-pil python3-pymupdf python3-reportlab \
@@ -47,10 +47,6 @@ ARG T3_VERSION=0.1.9
 ARG CLAUDE_CODE_VERSION=2.1.331
 ARG CODEX_VERSION=0.172.0
 ARG COPILOT_VERSION=1.0.115
-# powerlevel10k has no Debian package: pin the upstream tag and fetch the
-# tarball, which keeps the image free of a .git directory. Tag v1.20.0 points
-# at f43d8b9e0ef48326e68fd627a016f94ab1c3585e.
-ARG POWERLEVEL10K_VERSION=v1.20.0
 ARG BUILD_VERSION
 
 RUN npm install -g --omit=dev --no-audit --no-fund \
@@ -73,14 +69,6 @@ RUN npm install -g --omit=dev --no-audit --no-fund \
  && npm cache clean --force \
  && rm -rf /root/.npm
 
-# Shell prompt for the integrated terminal. The theme lives outside the
-# persistent home so add-on updates replace it, while the generated
-# ~/.p10k.zsh stays a user file.
-RUN mkdir -p /usr/share/powerlevel10k \
- && curl -fsSL "https://github.com/romkatv/powerlevel10k/archive/refs/tags/${POWERLEVEL10K_VERSION}.tar.gz" \
-      | tar -xz --strip-components=1 -C /usr/share/powerlevel10k \
- && chmod -R a+rX /usr/share/powerlevel10k
-
 RUN mkdir -p /etc/t3-vibecoding \
  && jq -n \
       --arg opencode "${OPENCODE_VERSION}" \
@@ -98,21 +86,19 @@ RUN mkdir -p /etc/t3-vibecoding \
 # clear them: /tmp/opencode, the scratch directory T3 Code points agents at,
 # would otherwise be an empty directory the agent cannot write to.
 RUN groupadd -g 1000 dev \
- && useradd -u 1000 -g dev -m -s /bin/zsh dev \
+ && useradd -u 1000 -g dev -m -s /bin/bash dev \
  && rm -rf /tmp/opencode /tmp/node-compile-cache /tmp/.bun-* \
  && install -d -o dev -g dev -m 0755 /tmp/opencode
 
 COPY run.sh /
 COPY lib/ /usr/local/lib/t3-vibecoding/
-# The prompt block is appended to Debian's /etc/zsh/zshrc instead of replacing
-# it, so the key bindings Debian installs for zsh keep working.
-COPY zshrc /tmp/t3-vibecoding-zshrc
-# The theme itself is sourced from ~/.zshrc by startup_prepare_shell, after the
-# user's own completion setup.
-COPY zshrc-block /usr/local/lib/t3-vibecoding/zshrc-block
+# The shell setup is appended to Debian's /etc/bash.bashrc instead of replacing
+# it, so Debian's locale and completion defaults keep working. A user's own
+# ~/.bashrc is sourced after it and still wins.
+COPY bashrc /tmp/t3-vibecoding-bashrc
 RUN chmod a+x /run.sh \
- && cat /tmp/t3-vibecoding-zshrc >> /etc/zsh/zshrc \
- && rm -f /tmp/t3-vibecoding-zshrc
+ && cat /tmp/t3-vibecoding-bashrc >> /etc/bash.bashrc \
+ && rm -f /tmp/t3-vibecoding-bashrc
 
 LABEL \
   io.hass.version="${BUILD_VERSION}" \
