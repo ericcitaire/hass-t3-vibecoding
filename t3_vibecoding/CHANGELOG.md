@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.19.0
+
 ### Changed
 
 - Make `bash` the default shell of the integrated terminal again and drop
@@ -19,6 +21,14 @@
   and the GitHub Copilot CLI (`@github/copilot` 1.0.115) for the integrated
   terminal, tracked through the `CODEX_VERSION` and `COPILOT_VERSION` build
   args.
+
+### Bundled components
+
+- Update `@opencode/cli` from 2.3.0 to **2.4.1** (the `OPENCODE_VERSION` build
+  arg default). Release notes:
+  https://www.npmjs.com/package/@opencode/cli/v/2.4.1
+- Update `t3` from 0.1.9 to **0.1.11** (the `T3_VERSION` build arg default).
+  Release notes: https://www.npmjs.com/package/t3/v/0.1.11
 
 ## 0.18.0
 

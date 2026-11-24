@@ -40,8 +40,8 @@ RUN apt-get update \
  && ln -sf "$(command -v fdfind)" /usr/local/bin/fd \
  && rm -rf /var/lib/apt/lists/*
 
-ARG OPENCODE_VERSION=2.3.0
-ARG T3_VERSION=0.1.9
+ARG OPENCODE_VERSION=2.4.1
+ARG T3_VERSION=0.1.11
 # Claude Code and Codex are the CLIs behind T3's `claudeAgent` and `codex`
 # drivers; the GitHub Copilot CLI is for use from the integrated terminal.
 ARG CLAUDE_CODE_VERSION=2.1.331
