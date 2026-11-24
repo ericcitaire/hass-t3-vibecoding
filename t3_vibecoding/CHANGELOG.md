@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Added
+
+- Bundle the Claude Code CLI (`@anthropic-ai/claude-code` 2.1.331) so T3's
+  `claudeAgent` driver runs out of the box, and track it in the dependency
+  sweep through the `CLAUDE_CODE_VERSION` build arg.
+- Bundle the OpenAI Codex CLI (`@openai/codex` 0.172.0) for T3's `codex` driver
+  and the GitHub Copilot CLI (`@github/copilot` 1.0.115) for the integrated
+  terminal, tracked through the `CODEX_VERSION` and `COPILOT_VERSION` build
+  args.
+
 ## 0.18.0
 
 ### Bundled components
