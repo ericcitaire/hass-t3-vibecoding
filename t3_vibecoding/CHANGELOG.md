@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Fixed
+
+- Start T3 Code through the default `t3` command instead of `t3 serve`: since
+  t3 0.1.11 `serve` no longer accepts `--auto-bootstrap-project-from-cwd`, so
+  the add-on exited at startup with `Unrecognized flag` and the workspace
+  project was never created. The workspace is bootstrapped again on first
+  launch.
+
 ## 0.19.0
 
 ### Changed
