@@ -92,15 +92,17 @@ startup_prepare_shell() {
 startup_log_versions() {
   local opencode_version="unknown"
   local t3_cli_version="unknown"
+  local claude_code_version="unknown"
 
   if [ -r "${VERSIONS_FILE}" ]; then
     opencode_version="$(jq -r '.opencode // "unknown"' "${VERSIONS_FILE}")"
     t3_cli_version="$(jq -r '.t3 // "unknown"' "${VERSIONS_FILE}")"
+    claude_code_version="$(jq -r '.claude // "unknown"' "${VERSIONS_FILE}")"
   else
     bashio::log.warning "Version stamp missing: ${VERSIONS_FILE}"
   fi
 
-  bashio::log.info "Bundled versions: opencode ${opencode_version}, t3 ${t3_cli_version}"
+  bashio::log.info "Bundled versions: opencode ${opencode_version}, t3 ${t3_cli_version}, claude ${claude_code_version}"
 }
 
 startup_exec_t3() {

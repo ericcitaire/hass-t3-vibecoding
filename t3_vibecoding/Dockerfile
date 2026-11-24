@@ -42,13 +42,18 @@ RUN apt-get update \
 
 ARG OPENCODE_VERSION=2.3.0
 ARG T3_VERSION=0.1.9
+# Claude Code is the CLI behind T3's `claudeAgent` driver.
+ARG CLAUDE_CODE_VERSION=2.1.331
 # powerlevel10k has no Debian package: pin the upstream tag and fetch the
 # tarball, which keeps the image free of a .git directory. Tag v1.20.0 points
 # at f43d8b9e0ef48326e68fd627a016f94ab1c3585e.
 ARG POWERLEVEL10K_VERSION=v1.20.0
 ARG BUILD_VERSION
 
-RUN npm install -g --omit=dev --no-audit --no-fund "@opencode/cli@${OPENCODE_VERSION}" "t3@${T3_VERSION}" \
+RUN npm install -g --omit=dev --no-audit --no-fund \
+      "@opencode/cli@${OPENCODE_VERSION}" \
+      "t3@${T3_VERSION}" \
+      "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
  && mv /usr/lib/node_modules/@opencode/cli/bin/opencode.exe /usr/lib/node_modules/@opencode/cli/bin/opencode.real \
  && printf '%s\n' \
       '#!/bin/sh' \
@@ -75,8 +80,9 @@ RUN mkdir -p /etc/t3-vibecoding \
  && jq -n \
       --arg opencode "${OPENCODE_VERSION}" \
       --arg t3 "${T3_VERSION}" \
+      --arg claude "${CLAUDE_CODE_VERSION}" \
       --arg addon "${BUILD_VERSION}" \
-      '{opencode: $opencode, t3: $t3, addon: $addon}' \
+      '{opencode: $opencode, t3: $t3, claude: $claude, addon: $addon}' \
       > /etc/t3-vibecoding/versions.json \
  && chmod 644 /etc/t3-vibecoding/versions.json
 

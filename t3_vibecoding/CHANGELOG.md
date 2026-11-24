@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+
+- Bundle the Claude Code CLI (`@anthropic-ai/claude-code` 2.1.331) so T3's
+  `claudeAgent` driver runs out of the box, and track it in the dependency
+  sweep through the `CLAUDE_CODE_VERSION` build arg.
+
 ## 0.18.0
 
 ### Bundled components

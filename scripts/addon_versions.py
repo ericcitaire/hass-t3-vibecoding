@@ -94,6 +94,16 @@ COMPONENTS: tuple[Component, ...] = (
         release_url="https://www.npmjs.com/package/{package}/v/{latest}",
     ),
     Component(
+        key="claude",
+        label="Claude Code",
+        short="Claude Code",
+        arg="CLAUDE_CODE_VERSION",
+        package="@anthropic-ai/claude-code",
+        datasource="npm",
+        docs_patterns=(rf"`@anthropic-ai/claude-code` ({_VERSION})",),
+        release_url="https://www.npmjs.com/package/{package}/v/{latest}",
+    ),
+    Component(
         key="powerlevel10k",
         label="powerlevel10k",
         short="powerlevel10k",
