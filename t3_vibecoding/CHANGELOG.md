@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.19.1
+
 ### Fixed
 
 - Start T3 Code through the default `t3` command instead of `t3 serve`: since
