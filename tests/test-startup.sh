@@ -54,33 +54,7 @@ test_run_as_dev() {
   # T3 picks the integrated terminal's shell from $SHELL.
   # shellcheck disable=SC2016 # $SHELL must expand inside the child shell
   output="$(startup_run_as_dev sh -c 'printf "%s" "$SHELL"')"
-  assert_eq "${output}" "/bin/zsh"
-}
-
-test_prepare_shell() {
-  local zshrc="${HOME_DIR}/.zshrc"
-
-  # No .zshrc yet: the block creates it.
-  mkdir -p "${HOME_DIR}"
-  startup_prepare_shell
-  assert_file "${zshrc}"
-  assert_contains "$(cat "${zshrc}")" "${ZSH_PROMPT_MARKER}"
-  assert_contains "$(cat "${zshrc}")" "powerlevel10k.zsh-theme"
-
-  # Restarting the add-on must not append the block twice.
-  startup_prepare_shell
-  assert_eq "$(grep -cF "${ZSH_PROMPT_MARKER}" "${zshrc}")" "1"
-
-  # A file without a trailing newline keeps its last line intact.
-  printf '%s' 'PROMPT="keep me"' >"${zshrc}"
-  startup_prepare_shell
-  assert_eq "$(grep -cF 'PROMPT="keep me"' "${zshrc}")" "1"
-  assert_eq "$(grep -cF "${ZSH_PROMPT_MARKER}" "${zshrc}")" "1"
-
-  # A user-edited .zshrc that already has the block is left alone.
-  before="$(cat "${zshrc}")"
-  startup_prepare_shell
-  assert_eq "$(cat "${zshrc}")" "${before}"
+  assert_eq "${output}" "/bin/bash"
 }
 
 test_log_versions_from_build_stamp() {
@@ -101,7 +75,6 @@ test_log_versions_from_build_stamp() {
 run_test test_load_options
 run_test test_prepare_home
 run_test test_run_as_dev
-run_test test_prepare_shell
 run_test test_log_versions_from_build_stamp
 
 finish_tests

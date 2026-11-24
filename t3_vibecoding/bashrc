@@ -1,0 +1,31 @@
+# t3-vibecoding shell setup, appended to Debian's /etc/bash.bashrc.
+# Keep it self-contained: the rest of that file (locale, chroot, default PS1)
+# belongs to Debian. The user's own ~/.bashrc is sourced after this file, so a
+# prompt set there still wins.
+
+# Tab completion: Debian only loads bash-completion from /etc/profile, which
+# the terminal (an interactive, non-login shell) never reads.
+if ! shopt -oq posix; then
+  if [ -r /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  fi
+fi
+
+# The prompt shows the current git branch through git's own prompt library,
+# which the git package ships: nothing else to install, and nothing is shown
+# outside a repository.
+if [ -r /usr/lib/git-core/git-sh-prompt ]; then
+  . /usr/lib/git-core/git-sh-prompt
+fi
+if declare -F __git_ps1 >/dev/null; then
+  PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]$(__git_ps1 " (%s)")\$ '
+else
+  PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+fi
+
+# HOME is /data/home, which is persistent: history survives add-on updates.
+HISTFILE=~/.bash_history
+HISTSIZE=5000
+HISTFILESIZE=5000
+HISTCONTROL=ignoreboth
+shopt -s histappend

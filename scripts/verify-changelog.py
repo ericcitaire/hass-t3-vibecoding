@@ -26,8 +26,7 @@ USER_VISIBLE_PATHS = (
     "t3_vibecoding/config.yaml",
     "t3_vibecoding/translations/",
     "t3_vibecoding/browser-packages.txt",
-    "t3_vibecoding/zshrc",
-    "t3_vibecoding/zshrc-block",
+    "t3_vibecoding/bashrc",
     "t3_vibecoding/icon.png",
 )
 

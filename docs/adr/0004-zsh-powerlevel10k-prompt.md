@@ -1,6 +1,6 @@
 # Make zsh with powerlevel10k the integrated terminal's shell
 
-Status: accepted
+Status: superseded by [ADR 0008](0008-bash-default-shell.md)
 
 The add-on installed `zsh` next to `bash` but left the integrated terminal on
 `bash`, so users had to know that `zsh` existed and start it by hand. 0.14.0
