@@ -22,10 +22,12 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
   large scanned documents; Pillow saves the rendered images and ReportLab
   generates new PDFs. `qpdf`, Ghostscript and ImageMagick are intentionally not
   installed.
-- `@opencode/cli` 2.3.0 (OpenCode 2), `t3` 0.1.9 and
-  `@anthropic-ai/claude-code` 2.1.331 (Claude Code CLI): pinned stable
-  versions, installed globally with npm. Claude Code backs T3's `claudeAgent`
-  driver.
+- `@opencode/cli` 2.3.0 (OpenCode 2), `t3` 0.1.9,
+  `@anthropic-ai/claude-code` 2.1.331 (Claude Code CLI),
+  `@openai/codex` 0.172.0 (Codex CLI) and `@github/copilot` 1.0.115 (GitHub
+  Copilot CLI): pinned stable versions, installed globally with npm. Claude Code
+  and Codex back T3's `claudeAgent` and `codex` drivers; Copilot CLI is
+  available in the integrated terminal.
 - System libraries and fonts for T3's headless preview browser
   (Chromium/Playwright)
 
@@ -172,10 +174,14 @@ Drivers available under `providers`: `opencode`, `codex`, `claudeAgent`,
 `cursor`, `grok`, `antigravity` — each with an `enabled` field (default
 `false`).
 
-The `claudeAgent` driver runs the bundled Claude Code CLI: authenticate it once
-with `claude` in the integrated terminal, or set `ANTHROPIC_API_KEY` through
-`env_vars`. Claude Code stores its login under `/data/home`, so it survives
-add-on updates.
+The `claudeAgent` and `codex` drivers run the bundled Claude Code and Codex
+CLIs: authenticate them once from the integrated terminal (`claude`, then
+`codex login`), or set `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` through `env_vars`.
+Their logins live under `/data/home`, so they survive add-on updates.
+
+The GitHub Copilot CLI (`copilot`) is also on `PATH` for terminal use. It needs
+a Copilot subscription; run `copilot` once to sign in, and its configuration is
+kept under `/data/home` too.
 
 The add-on does not route between models: there is no gateway in the image and
 no automatic failover. When a free model is rate-limited, the turn fails and you
@@ -197,7 +203,7 @@ configuration persists in `/data/home/.config/gh`.
 
 | Container path | Content | Persistent |
 |---|---|---|
-| `/data/home` | `dev`'s `HOME`, OpenCode/Claude/gh config, secrets | yes (`/data`) |
+| `/data/home` | `dev`'s `HOME`, agent CLIs and `gh` config, secrets | yes (`/data`) |
 | `/data/t3code` | `T3CODE_HOME`: userdata, caches, worktrees, logs | yes (`/data`) |
 | `/share/vibecoding` | Project source code | yes (`share` folder) |
 | `/tmp/opencode` | Scratch directory T3 Code points agents at, owned by `dev` | no (container) |
@@ -293,9 +299,10 @@ the device, so installation and updates only wait for the download.
 
 ## Updates
 
-The add-on pins four components in the `Dockerfile`, as build args:
+The add-on pins six components in the `Dockerfile`, as build args:
 `@opencode/cli` (`OPENCODE_VERSION`), `t3` (`T3_VERSION`),
-`@anthropic-ai/claude-code` (`CLAUDE_CODE_VERSION`) and `powerlevel10k`
+`@anthropic-ai/claude-code` (`CLAUDE_CODE_VERSION`), `@openai/codex`
+(`CODEX_VERSION`), `@github/copilot` (`COPILOT_VERSION`) and `powerlevel10k`
 (`POWERLEVEL10K_VERSION`). The versions bundled in a given image are listed
 under **Bundled components** above and stamped at build time into
 `/etc/t3-vibecoding/versions.json`.
@@ -304,9 +311,10 @@ A **release workflow** keeps them current; you do not bump versions by hand:
 
 - **Weekly** (Monday, 06:00 UTC) it compares the pinned versions with the
   versions published upstream: the npm `latest` dist-tag for `@opencode/cli`,
-  `t3` and `@anthropic-ai/claude-code`, and the newest semantic-version tag for
-  `powerlevel10k`. The `preview` and `nightly` channels are ignored. It also
-  reads the `## Unreleased` section of `CHANGELOG.md`.
+  `t3`, `@anthropic-ai/claude-code`, `@openai/codex` and `@github/copilot`, and
+  the newest semantic-version tag for `powerlevel10k`. The `preview` and
+  `nightly` channels are ignored. It also reads the `## Unreleased` section of
+  `CHANGELOG.md`.
 - When a version moved or `Unreleased` has content, it opens — or refreshes in
   place on the existing `chore/dependency-sweep` branch — one **release PR**
   carrying everything in a single commit: the build args, `version` in

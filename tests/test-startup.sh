@@ -84,7 +84,7 @@ test_prepare_shell() {
 }
 
 test_log_versions_from_build_stamp() {
-  printf '%s' '{"opencode":"1.2.3","t3":"4.5.6","claude":"7.8.9","addon":"0.9.0"}' > "${VERSIONS_FILE}"
+  printf '%s' '{"opencode":"1.2.3","t3":"4.5.6","claude":"7.8.9","codex":"0.4.5","copilot":"6.7.8","addon":"0.9.0"}' > "${VERSIONS_FILE}"
   rm -f "${TEST_TMP}/log.info"
 
   startup_log_versions
@@ -94,6 +94,8 @@ test_log_versions_from_build_stamp() {
   assert_contains "${log}" "opencode 1.2.3"
   assert_contains "${log}" "t3 4.5.6"
   assert_contains "${log}" "claude 7.8.9"
+  assert_contains "${log}" "codex 0.4.5"
+  assert_contains "${log}" "copilot 6.7.8"
 }
 
 run_test test_load_options
