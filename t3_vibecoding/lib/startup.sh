@@ -91,8 +91,12 @@ startup_log_versions() {
 startup_exec_t3() {
   bashio::log.info "Starting T3 Code on ${T3_HOST}:${T3_PORT} (user ${DEV_USER}, workspace=${STARTUP_OPTIONS[workspace]})"
 
+  # `t3` is the default server command. `t3 serve` does not accept
+  # `--auto-bootstrap-project-from-cwd` since t3 0.1.11 (it disables project
+  # bootstrap on purpose), so start through the default command and keep the
+  # browser closed explicitly.
   startup_exec_as_dev \
-    t3 serve \
+    t3 \
       --mode web \
       --host "${T3_HOST}" \
       --port "${T3_PORT}" \

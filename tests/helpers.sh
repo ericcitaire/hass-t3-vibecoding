@@ -32,9 +32,10 @@ cat > "${STUB_DIR}/opencode" <<'EOF'
 printf '2.1.2\n'
 EOF
 
-cat > "${STUB_DIR}/t3" <<'EOF'
+cat > "${STUB_DIR}/t3" <<EOF
 #!/usr/bin/env bash
-printf '0.1.0\n'
+printf 't3 %s\n' "\$*" >> "${TEST_TMP}/t3.log"
+if [ "\${1:-}" = "--version" ]; then printf '0.1.0\n'; fi
 EOF
 
 chmod +x "${STUB_DIR}"/*

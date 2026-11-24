@@ -72,9 +72,33 @@ test_log_versions_from_build_stamp() {
   assert_contains "${log}" "copilot 6.7.8"
 }
 
+test_t3_launch_invocation() {
+  CONFIG_VALUES[workspace]="${TEST_TMP}/workspace"
+  rm -f "${TEST_TMP}/t3.log"
+  startup_load_options
+
+  ( startup_exec_t3 ) >/dev/null 2>&1
+
+  local invocation
+  invocation="$(cat "${TEST_TMP}/t3.log")"
+  assert_contains "${invocation}" "t3 --mode web"
+  assert_contains "${invocation}" "--host ${T3_HOST}"
+  assert_contains "${invocation}" "--port ${T3_PORT}"
+  assert_contains "${invocation}" "--base-dir ${T3_HOME}"
+  assert_contains "${invocation}" "--no-browser"
+  assert_contains "${invocation}" "--auto-bootstrap-project-from-cwd"
+  assert_contains "${invocation}" "${TEST_TMP}/workspace"
+
+  # t3 >= 0.1.11 rejects --auto-bootstrap-project-from-cwd on `t3 serve`.
+  case "${invocation}" in
+    "t3 serve" | "t3 serve "*) fail "t3 serve rejects --auto-bootstrap-project-from-cwd" ;;
+  esac
+}
+
 run_test test_load_options
 run_test test_prepare_home
 run_test test_run_as_dev
 run_test test_log_versions_from_build_stamp
+run_test test_t3_launch_invocation
 
 finish_tests

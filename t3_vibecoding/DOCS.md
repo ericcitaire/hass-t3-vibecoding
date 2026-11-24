@@ -1,7 +1,7 @@
 # T3 Code + OpenCode
 
 A **headless vibe coding** environment packaged as a local Home Assistant OS
-add-on. It runs a **T3 Code** server (`t3 serve`, web mode) with **OpenCode** as
+add-on. It runs a **T3 Code** server (`t3`, web mode) with **OpenCode** as
 the harness, as a **non-root** user `dev` (uid/gid 1000).
 
 ## Bundled components
@@ -214,7 +214,7 @@ the device, so installation and updates only wait for the download.
    URL.
 2. The add-on appears under the repository name.
 3. **Install**, fill in the options, **Start**.
-4. **Log** tab: copy the pairing token printed by `t3 serve`, then open
+4. **Log** tab: copy the pairing token printed by T3 Code on startup, then open
    `http://<box-IP>:4096/` (or the configured host port) and pair. The printed
    `Pairing URL` points at the **container IP**, which is not reachable from
    other LAN devices: keep the token and open the URL through the box IP
