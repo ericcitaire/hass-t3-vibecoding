@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 # Credentials module: one intake for secret files and child-process environment.
 
+# Settings applied on every start for keys the user has not chosen. T3 Code's
+# "Keep awake while agents work" spawns systemd-inhibit, which talks to
+# systemd-logind over the system bus: the add-on container has neither, so the
+# helper fails with ENOENT and retries with an exponential backoff, logging
+# "keep-awake sleep inhibitor stopped" during every run. The setting is
+# useless here, so it defaults to off; the UI or t3_settings_json can turn it
+# back on.
+T3_DEFAULT_SETTINGS='{"keepAwakeWhileAgentsWork":false}'
+
 _credentials_write_json() {
   local value="$1" destination="$2" mode="$3" label="$4"
   local message="$5" directory
@@ -24,7 +33,7 @@ _credentials_write_json() {
 
 _credentials_merge_json() {
   local value="$1" destination="$2" mode="$3" label="$4"
-  local message="$5" directory incoming
+  local message="$5" merge="${6:-.[0] * .[1]}" directory incoming
 
   if ! bashio::var.has_value "${value}"; then
     return 1
@@ -40,7 +49,7 @@ _credentials_merge_json() {
   incoming="${destination}.incoming"
   printf '%s' "${value}" | jq . > "${incoming}"
   if [ -f "${destination}" ]; then
-    jq -s '.[0] * .[1]' "${destination}" "${incoming}" > "${destination}.tmp"
+    jq -s "${merge}" "${destination}" "${incoming}" > "${destination}.tmp"
   else
     cp "${incoming}" "${destination}.tmp"
   fi
@@ -48,6 +57,13 @@ _credentials_merge_json() {
   chown "${DEV_UID}:${DEV_GID}" "${destination}.tmp"
   mv "${destination}.tmp" "${destination}"
   rm -f "${incoming}"
+}
+
+# Merges defaults: unlike _credentials_merge_json, keys already set in the
+# destination win, so a setting the user changed in the T3 Code UI survives
+# every restart.
+_credentials_merge_defaults() {
+  _credentials_merge_json "$1" "$2" "$3" "$4" "$5" '.[1] * .[0]'
 }
 
 credentials_authenticate_gh() {
@@ -91,6 +107,15 @@ credentials_apply() {
     "opencode_auth_json" \
     "Writing OpenCode credentials"; then
     applied+=("opencode-auth")
+  fi
+
+  if _credentials_merge_defaults \
+    "${T3_DEFAULT_SETTINGS}" \
+    "${T3_HOME}/userdata/settings.json" \
+    600 \
+    "T3 Code defaults" \
+    "Applying T3 Code defaults (settings.json)"; then
+    applied+=("t3-defaults")
   fi
 
   if _credentials_merge_json \

@@ -188,6 +188,18 @@ those that may use prompts for training.
 > The file lives in `/data/t3code/userdata/settings.json` and survives add-on
 > updates.
 
+Before applying `t3_settings_json`, the add-on fills in one default of its own
+on every start: `"keepAwakeWhileAgentsWork": false`. T3 Code's *Keep awake
+while agents work* setting holds an OS sleep inhibitor through
+`systemd-inhibit`, which needs `systemd-logind` on the system bus; the add-on
+container runs s6-overlay with neither, so the command fails with `ENOENT` and
+T3 Code retries it with an exponential backoff (5 seconds up to 10 minutes),
+logging `keep-awake sleep inhibitor stopped` during every agent run. The
+setting is useless here — Home Assistant OS does not suspend for an add-on, and
+a sleep inhibitor belongs to the host — so it defaults to off. Only missing
+keys are filled in: a value chosen in the T3 Code UI survives restarts, and
+`"keepAwakeWhileAgentsWork": true` in `t3_settings_json` still wins.
+
 ### 5. GitHub CLI (`gh`)
 
 Set `github_token` (classic PAT, `repo` scope): the add-on runs
@@ -282,6 +294,14 @@ the device, so installation and updates only wait for the download.
   the bundled PDF stack. Pull or rebuild the add-on instead of running
   `pip install`: the image's Python is externally managed and pip refuses
   without `--break-system-packages`.
+- **`keep-awake sleep inhibitor stopped` in the log**: T3 Code's *Keep awake
+  while agents work* setting spawns `systemd-inhibit`, which needs
+  `systemd-logind` over D-Bus; the add-on container has neither, so the command
+  fails with `ENOENT` and T3 Code retries it with an exponential backoff (up to
+  10 minutes). The add-on disables the setting by default; if the message
+  persists, `keepAwakeWhileAgentsWork` is set to `true` in
+  `/data/t3code/userdata/settings.json` or `t3_settings_json`. Agent runs are
+  unaffected.
 - **Headless keyring**: `@napi-rs/keyring` may not find a Secret Service; check
   the file fallback in the logs.
 - **Network security**: port `4096` (bound to `0.0.0.0` in the container) is

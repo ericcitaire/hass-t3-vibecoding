@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Fixed
+
+- Disable T3 Code's *Keep awake while agents work* setting by default. Its
+  `systemd-inhibit` helper needs `systemd-logind`, which the add-on container
+  does not run, so T3 Code retried it with an exponential backoff and logged
+  `keep-awake sleep inhibitor stopped` during every agent run. A value chosen in
+  the T3 Code UI or through `t3_settings_json` still wins.
+
 ## 0.19.2
 
 ### Bundled components
