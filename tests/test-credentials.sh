@@ -42,6 +42,21 @@ test_merge_json() {
   assert_no_file "${destination}.incoming"
 }
 
+test_merge_defaults() {
+  local destination="${TEST_TMP}/t3code/defaults/settings.json"
+
+  _credentials_merge_defaults '{"keepAwakeWhileAgentsWork":false,"fresh":1}' "${destination}" 600 label message
+
+  assert_file "${destination}"
+  assert_mode "${destination}" 600
+  assert_eq "$(jq -S -c . "${destination}")" '{"fresh":1,"keepAwakeWhileAgentsWork":false}'
+
+  printf '%s' '{"keepAwakeWhileAgentsWork":true,"keep":1}' > "${destination}"
+  _credentials_merge_defaults '{"keepAwakeWhileAgentsWork":false,"fresh":1}' "${destination}" 600 label message
+
+  assert_eq "$(jq -S -c . "${destination}")" '{"fresh":1,"keep":1,"keepAwakeWhileAgentsWork":true}'
+}
+
 test_build_env() {
   CONFIG_VALUES[github_token]="token"
   CONFIG_VALUES[env_vars]='[{"name":"ANTHROPIC_API_KEY","value":"sk-ant"},{"name":"bad-name","value":"nope"}]'
@@ -76,6 +91,8 @@ test_apply_writes_everything() {
   assert_mode "${HOME_DIR}/.local/share/opencode/auth.json" 600
   assert_file "${T3_HOME}/userdata/settings.json"
   assert_mode "${T3_HOME}/userdata/settings.json" 600
+  assert_eq "$(jq -S -c . "${T3_HOME}/userdata/settings.json")" \
+    '{"keepAwakeWhileAgentsWork":false,"providers":{"opencode":{"enabled":true}}}'
 
   assert_contains "$(cat "${TEST_TMP}/gh.log")" "auth login --with-token"
   assert_contains "$(cat "${TEST_TMP}/gh.log")" "auth setup-git"
@@ -86,13 +103,26 @@ test_apply_writes_everything() {
   assert_contains "${summary}" "github"
   assert_contains "${summary}" "opencode-config"
   assert_contains "${summary}" "opencode-auth"
+  assert_contains "${summary}" "t3-defaults"
   assert_contains "${summary}" "t3-settings"
+}
+
+test_user_option_overrides_defaults() {
+  rm -rf "${T3_HOME}"
+  CONFIG_VALUES[t3_settings_json]='{"keepAwakeWhileAgentsWork":true}'
+
+  startup_load_options
+  credentials_apply
+
+  assert_eq "$(jq -S -c . "${T3_HOME}/userdata/settings.json")" '{"keepAwakeWhileAgentsWork":true}'
 }
 
 run_test test_write_json_valid
 run_test test_write_json_invalid
 run_test test_merge_json
+run_test test_merge_defaults
 run_test test_build_env
 run_test test_apply_writes_everything
+run_test test_user_option_overrides_defaults
 
 finish_tests
