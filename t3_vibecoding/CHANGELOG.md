@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 0.19.2
+
+### Bundled components
+
+- Update `@opencode/cli` from 2.4.1 to **2.4.2** (the `OPENCODE_VERSION` build
+  arg default). Release notes:
+  https://www.npmjs.com/package/@opencode/cli/v/2.4.2
+- Update `t3` from 0.1.11 to **0.1.13** (the `T3_VERSION` build arg default).
+  Release notes: https://www.npmjs.com/package/t3/v/0.1.13
+- Update `@anthropic-ai/claude-code` from 2.1.331 to **2.1.332** (the
+  `CLAUDE_CODE_VERSION` build arg default). Release notes:
+  https://www.npmjs.com/package/@anthropic-ai/claude-code/v/2.1.332
+- Update `@github/copilot` from 1.0.115 to **1.0.117** (the `COPILOT_VERSION`
+  build arg default). Release notes:
+  https://www.npmjs.com/package/@github/copilot/v/1.0.117
+
 ## 0.19.1
 
 ### Fixed

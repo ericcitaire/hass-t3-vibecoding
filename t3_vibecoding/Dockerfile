@@ -40,13 +40,13 @@ RUN apt-get update \
  && ln -sf "$(command -v fdfind)" /usr/local/bin/fd \
  && rm -rf /var/lib/apt/lists/*
 
-ARG OPENCODE_VERSION=2.4.1
-ARG T3_VERSION=0.1.11
+ARG OPENCODE_VERSION=2.4.2
+ARG T3_VERSION=0.1.13
 # Claude Code and Codex are the CLIs behind T3's `claudeAgent` and `codex`
 # drivers; the GitHub Copilot CLI is for use from the integrated terminal.
-ARG CLAUDE_CODE_VERSION=2.1.331
+ARG CLAUDE_CODE_VERSION=2.1.332
 ARG CODEX_VERSION=0.172.0
-ARG COPILOT_VERSION=1.0.115
+ARG COPILOT_VERSION=1.0.117
 ARG BUILD_VERSION
 
 RUN npm install -g --omit=dev --no-audit --no-fund \

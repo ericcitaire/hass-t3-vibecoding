@@ -23,9 +23,9 @@ the harness, as a **non-root** user `dev` (uid/gid 1000).
   large scanned documents; Pillow saves the rendered images and ReportLab
   generates new PDFs. `qpdf`, Ghostscript and ImageMagick are intentionally not
   installed.
-- `@opencode/cli` 2.4.1 (OpenCode 2), `t3` 0.1.11,
-  `@anthropic-ai/claude-code` 2.1.331 (Claude Code CLI),
-  `@openai/codex` 0.172.0 (Codex CLI) and `@github/copilot` 1.0.115 (GitHub
+- `@opencode/cli` 2.4.2 (OpenCode 2), `t3` 0.1.13,
+  `@anthropic-ai/claude-code` 2.1.332 (Claude Code CLI),
+  `@openai/codex` 0.172.0 (Codex CLI) and `@github/copilot` 1.0.117 (GitHub
   Copilot CLI): pinned stable versions, installed globally with npm. Claude Code
   and Codex back T3's `claudeAgent` and `codex` drivers; Copilot CLI is
   available in the integrated terminal.
